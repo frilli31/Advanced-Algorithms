@@ -47,7 +47,7 @@ public class Graph {
     }
 
     public int numberOfNodes() {
-        return l.keySet().size();
+        return l.size();
     }
 
     public int numberOfArcs() {
@@ -67,8 +67,7 @@ public class Graph {
     public double mediumDegree() {
         return (double) l.values().stream()
                 .map(HashSet::size)
-                .reduce(Integer::sum)
-                .orElse(0) / l.size();
+                .reduce(0, Integer::sum) / l.size();
     }
 
     public List<Integer> distributionOfDegree() {

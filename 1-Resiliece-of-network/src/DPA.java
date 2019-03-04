@@ -16,11 +16,9 @@ public class DPA extends Graph {
         List<Integer> nodeNumbers = new ArrayList<>();
         l.keySet().forEach(k -> nodeNumbers.addAll(Collections.nCopies(m, k)));
 
-        Random rn = new Random();
         IntStream.rangeClosed(m + 1, n).forEach(u -> {
             // estrae lista di m nodi scelti trai i presenti
-            List<Integer> v1 = IntStream.range(0, m)
-                    .map(x -> rn.nextInt(nodeNumbers.size()))
+            List<Integer> v1 = new Random().ints(m, 0, nodeNumbers.size())
                     .map(nodeNumbers::get)
                     .boxed()
                     .collect(Collectors.toList());

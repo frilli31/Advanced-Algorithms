@@ -42,6 +42,7 @@ public class Main {
                 .forEach(System.out::println);
 
         List<List<Integer>> lists = Stream.of(new Graph(lines), new ER(nodes, er_p), new DPA(nodes, dpa_m))
+                .peek(Graph::printInfo)
                 .map(x -> x.resilienceAfterRemove(Graph::randomRemove))
                 .collect(Collectors.toList());
         Map<String, List<Integer>> map = Map.of("Input Graph", lists.get(0),
@@ -53,8 +54,8 @@ public class Main {
                 .map(x -> x.resilienceAfterRemove(Graph::bestNodeRemove))
                 .collect(Collectors.toList());
         Map<String, List<Integer>> map2 = Map.of("Input Graph", lists2.get(0),
-                "ER with n=6474 p=0.0003", lists2.get(1),
-                "DPA with n=6474 m=2", lists2.get(2));
+                "ER with n=" + nodes + " p=" + er_p, lists2.get(1),
+                "DPA with n=" + nodes + " m=" + dpa_m, lists2.get(2));
         lineChart(map2, "best_node");
     }
 
