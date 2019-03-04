@@ -18,15 +18,13 @@ public class DPA extends Graph {
 
         IntStream.rangeClosed(m + 1, n).forEach(u -> {
             // estrae lista di m nodi scelti trai i presenti
-            List<Integer> v1 = new Random().ints(m, 0, nodeNumbers.size())
+            Long added_arcs = new Random().ints(m, 0, nodeNumbers.size())
                     .map(nodeNumbers::get)
-                    .boxed()
-                    .collect(Collectors.toList());
-            // aggiungo una copia dei biliettini nell'urna
-            nodeNumbers.addAll(v1);
-            nodeNumbers.add(u);
-            addNode(u);
-            v1.forEach(dest -> addArc(u, dest));
+                    .distinct()
+                    .peek(nodeNumbers::add)
+                    .peek(dest->this.addArc(u,dest))
+                    .count();
+            nodeNumbers.addAll(Collections.nCopies(added_arcs.intValue()+1, u));
         });
     }
 }
