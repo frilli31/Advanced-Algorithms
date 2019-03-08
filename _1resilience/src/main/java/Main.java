@@ -14,7 +14,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -48,28 +47,27 @@ public class Main {
                 .map(Graph::isResilient)
                 .forEach(System.out::println);
 
+        System.out.println("Now I' m going to do the attacks and computation the resilience");
+        // creation of graphs and execution of random random attack and best node attack
         List<Graph> graphs = List.of(new Graph(lines), new ER(nodes, er_p), new DPA(nodes, dpa_m));
-
         List<List<Integer>> lists = graphs.parallelStream().map(Graph::clone)
                 .map(Graph::resilienceAfterRemoveRandomRemove)
                 .collect(Collectors.toList());
-
         List<List<Integer>> lists2 = graphs.parallelStream()
                 .map(Graph::resilienceAfterBestNodeAttackRemove)
                 .collect(Collectors.toList());
 
-        System.out.println(System.currentTimeMillis()-start);
-
+        // creation of structure passed to the function that create and export the graph
         Map<String, List<Integer>> map = Map.of("Input Graph", lists.get(0),
                 "ER with n=" + nodes + " p=" + er_p, lists.get(1),
                 "DPA with n=" + nodes + " m=" + dpa_m, lists.get(2));
-
-        lineChart(map, "Random Attack");
-
         Map<String, List<Integer>> map2 = Map.of("Input Graph", lists2.get(0),
                 "ER with n=" + nodes + " p=" + er_p, lists2.get(1),
                 "DPA with n=" + nodes + " m=" + dpa_m, lists2.get(2));
+        // generation and save of OUTPUT graphs
+        lineChart(map, "Random Attack");
         lineChart(map2, "Best Node Attack");
+        System.out.println("The execution took "+ (double) (System.currentTimeMillis()-start)/1000 + " seconds");
     }
 
     private static void lineChart(Map<String, List<Integer>> map, String output_name) {
