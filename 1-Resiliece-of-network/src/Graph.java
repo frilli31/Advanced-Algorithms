@@ -1,7 +1,6 @@
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.function.*;
 
 
 public class Graph {
@@ -11,12 +10,20 @@ public class Graph {
         l = new HashMap<>();
     }
 
-    public Graph(List<String> content) {
+    Graph(List<String> content) {
         this();
         content.stream()
                 .filter(x -> !x.startsWith("#"))
                 .map(x -> x.split("\t"))
                 .forEach(x -> addArc(Integer.parseInt(x[0]), Integer.parseInt(x[1])));
+    }
+
+    @Override
+    public Graph clone() {
+        Graph new_graph = new Graph();
+        new_graph.l = new HashMap<>(l.size());
+        l.forEach((k,v) -> new_graph.l.put(k, new HashSet<>(v)));
+        return new_graph;
     }
 
     void addNode(int label) {
@@ -26,11 +33,11 @@ public class Graph {
     }
 
     private void disableNode(int n) {
+        l.get(n).forEach(x->l.get(x).remove(n));
         l.remove(n);
-        l.values().forEach(x -> x.remove(n));
     }
 
-    protected void addArc(int source, int destination) {
+    void addArc(int source, int destination) {
         if (source != destination) {
             // add the nodes (if they are not present
             addNode(source);
@@ -51,7 +58,7 @@ public class Graph {
     }
 
     public int numberOfArcs() {
-        return l.values().stream()
+        return l.values().parallelStream()
                 .map(HashSet::size)
                 .reduce(0, Integer::sum) / 2;
     }
@@ -65,17 +72,17 @@ public class Graph {
     }
 
     public double mediumDegree() {
-        return (double) l.values().stream()
+        return (double) l.values().parallelStream()
                 .map(HashSet::size)
                 .reduce(0, Integer::sum) / l.size();
     }
 
     public List<Integer> distributionOfDegree() {
-        List<Integer> occurencies = l.values().stream()
+        List<Integer> occurencies = l.values().parallelStream()
                 .map(HashSet::size)
                 .collect(Collectors.toList());
 
-        return IntStream.range(0, occurencies.stream().max(Comparator.naturalOrder()).get())
+        return IntStream.rangeClosed(0, occurencies.stream().max(Comparator.naturalOrder()).orElse(0)).parallel()
                 .map(x -> Collections.frequency(occurencies, x))
                 .boxed()
                 .collect(Collectors.toList());
@@ -107,7 +114,7 @@ public class Graph {
     }
 
     int resilience() {
-        return connectedComponents().stream().mapToInt(Set::size).max().getAsInt();
+        return connectedComponents().stream().mapToInt(Set::size).max().orElse(0);
     }
 
     boolean isResilient(double threshold) {
@@ -120,24 +127,29 @@ public class Graph {
 
     void randomRemove(int n) {
         List<Integer> keys = new ArrayList<>(l.keySet());
-        new Random().ints(n, 0, keys.size()).map(keys::get).forEach(this::disableNode);
-    }
-
-    List<Integer> resilienceAfterRemove(BiConsumer<Graph, Integer> policy) {
-        List<Integer> list = new ArrayList<>(l.size());
-        IntStream.range(0, l.size()).forEach(x -> {
-            list.add(resilience());
-            policy.accept(this, 1);
-        });
-        return list;
+        new Random().ints( 0, keys.size()).distinct().limit(n).map(keys::get).forEach(this::disableNode);
     }
 
     void bestNodeRemove(int n) {
         l.entrySet().stream()
                 .sorted((x, y) -> Integer.compare(y.getValue().size(), x.getValue().size()))
-                .map(Map.Entry::getKey)
                 .limit(n)
+                .map(Map.Entry::getKey)
                 .forEach(this::disableNode);
+    }
+
+    List<Integer> resilienceAfterRemoveRandomRemove() {
+        List<Integer> keys = new ArrayList<>(l.keySet());
+        Collections.shuffle(keys);
+        return keys.stream().peek(this::disableNode).map(x->resilience()).collect(Collectors.toList());
+    }
+
+    List<Integer> resilienceAfterBestNodeAttackRemove() {
+        List<Integer> keys = l.entrySet().parallelStream()
+                .sorted((x, y) -> Integer.compare(y.getValue().size(), x.getValue().size()))
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toList());
+        return keys.stream().peek(this::disableNode).map(x->resilience()).collect(Collectors.toList());
     }
 }
 

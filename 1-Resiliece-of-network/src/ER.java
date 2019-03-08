@@ -9,7 +9,7 @@ public class ER extends Graph {
         Random rn = new Random();
         for(int source: l.keySet())
             for(int destination: l.keySet())
-                if(rn.nextFloat()<p)
+                if(rn.nextFloat()<=p)
                     addArc(source, destination);
     }
 }

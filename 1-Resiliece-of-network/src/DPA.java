@@ -12,13 +12,14 @@ public class DPA extends Graph {
             for (int destination : l.keySet())
                 addArc(source, destination);
 
-        // DPATrial: aggiunge m copie dei primi nodi a nodeNumbers
+        // DPATrial: aggiunge m copie dei primi m nodi a nodeNumbers
         List<Integer> nodeNumbers = new ArrayList<>();
         l.keySet().forEach(k -> nodeNumbers.addAll(Collections.nCopies(m, k)));
 
+        Random rn = new Random();
         IntStream.rangeClosed(m + 1, n).forEach(u -> {
             // estrae lista di m nodi scelti trai i presenti
-            Long added_arcs = new Random().ints(m, 0, nodeNumbers.size())
+            Long added_arcs = rn.ints(m, 0, nodeNumbers.size())
                     .map(nodeNumbers::get)
                     .distinct()
                     .peek(nodeNumbers::add)
