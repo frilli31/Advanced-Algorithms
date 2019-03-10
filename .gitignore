@@ -28,3 +28,11 @@ hs_err_pid*
 
 # maven's folder
 */target/
+
+.classpath
+.project
+.settings
+.factorypath
+
+# MacOS
+DS_Store

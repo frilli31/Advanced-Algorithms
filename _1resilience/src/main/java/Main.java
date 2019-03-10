@@ -29,31 +29,32 @@ public class Main {
         final int dpa_m = 2;
         final double percentage = 0.20;
         final int node_to_remove = (int) (percentage * nodes);
+        List<Graph> graphs = List.of(new Graph(lines), new ER(nodes, er_p), new DPA(nodes, dpa_m));
 
         long start = System.currentTimeMillis();
         // Print which graph is resilient (maximum size connected component>75%) after removing 20% of node randomly
-        System.out.println("Which graph is resilient after removing " + percentage * 100 + "% of nodes randomly");
+        System.out.println("Is the graph resilient after removing " + percentage * 100 + "% of nodes randomly");
         System.out.println("(The order is: Input graph, ER generated graph, DPA generated graph)");
-        Stream.of(new Graph(lines), new ER(nodes, er_p), new DPA(nodes, dpa_m))
+        graphs.parallelStream().map(Graph::clone)
                 .peek(x -> x.randomRemove(node_to_remove))
                 .map(Graph::isResilient)
                 .forEach(System.out::println);
 
         // Print which graph is resilient (maximum size connected component>75%) after removing the 20% of nodes
         // which have the maximum degree
-        System.out.println("Which graph is resilient after removing " + percentage * 100 + "% of node which have the maximum degree");
-        Stream.of(new Graph(lines), new ER(nodes, er_p), new DPA(nodes, dpa_m))
+        System.out.println("Is the graph resilient after removing " + percentage * 100 + "% of nodes by maximum degree");
+        System.out.println("(The order is: Input graph, ER generated graph, DPA generated graph)");
+        graphs.stream().map(Graph::clone) // Cannot use parallelStream because otherwise .limit() is not deterministic
                 .peek(x -> x.bestNodeRemove(node_to_remove))
                 .map(Graph::isResilient)
                 .forEach(System.out::println);
 
-        System.out.println("Now I' m going to do the attacks and computation the resilience");
-        // creation of graphs and execution of random random attack and best node attack
-        List<Graph> graphs = List.of(new Graph(lines), new ER(nodes, er_p), new DPA(nodes, dpa_m));
+        System.out.println("Now I' m going to do the attacks to all nodes and computate the resilience");
+        // Execution of random random attack and best node attack
         List<List<Integer>> lists = graphs.parallelStream().map(Graph::clone)
                 .map(Graph::resilienceAfterRemoveRandomRemove)
                 .collect(Collectors.toList());
-        List<List<Integer>> lists2 = graphs.parallelStream()
+        List<List<Integer>> lists2 = graphs.parallelStream().map(Graph::clone)
                 .map(Graph::resilienceAfterBestNodeAttackRemove)
                 .collect(Collectors.toList());
 
