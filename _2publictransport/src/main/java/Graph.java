@@ -26,17 +26,15 @@ public class Graph {
         adjs.get(source).get(dest).add(new Connection(name, dep_time, arr_time));
     }
 
-    public String calculateShortestPathFromSource(int source, int destination, int start_time) throws ParseException {
+    public String calculateShortestPathFromSource(int source, int destination, int start_time) {
         Set<Integer> settledNodes = new HashSet<>();
         Set<Integer> unsettledNodes = new HashSet<>();
         Map<Integer, Integer> distance = new HashMap<>();
         Map<Integer, Integer> precedent = new HashMap<>();
         Map<Integer, Connection> to_prec_connection = new HashMap<>();
-        Map<Integer, Integer> arrival_time = new HashMap<>();
 
         unsettledNodes.add(source);
-        distance.put(source, 0);
-        arrival_time.put(source, start_time);
+        distance.put(source, start_time);
 
         while (unsettledNodes.size() != 0) {
             int parent = unsettledNodes.stream()
@@ -48,20 +46,24 @@ public class Graph {
                 break;
             }
 
+            // If the distance is equal remain in the same bus
+            Comparator<Connection> comp = (x,y) -> {
+                if(x.arrival_time<y.arrival_time || x.arrival_time<=y.arrival_time && parent!=source && to_prec_connection.get(parent).name.equals(x.name)) return -1;
+                else return 1;
+            };
+
             adjs.get(parent).entrySet().stream().filter(e -> !settledNodes.contains(e.getKey())).forEach(e -> {
                 int dest = e.getKey();
-                int time = arrival_time.get(parent);
-                Connection con = e.getValue().stream().filter(c -> c.departure_time >= time).min(Comparator.comparingInt(Connection::arrival_time)).orElse(
-                        e.getValue().stream().min(Comparator.comparingInt(Connection::arrival_time)).orElseThrow());
+                int time = distance.get(parent);
+                Connection con = e.getValue().stream().filter(c -> c.departure_time >= time%2400 && c.arrival_time>=c.departure_time).min(comp).orElse(
+                        e.getValue().stream().filter(c -> c.departure_time+2400 >= (time%2400)).min(comp).orElseThrow());
                 int new_dist = con.arrival_time;
-                if (con.arrival_time < time)
-                    new_dist += 2400;
+                if (con.arrival_time<time || con.arrival_time<con.departure_time) new_dist += 2400;
 
                 if (!distance.containsKey(dest) || new_dist < distance.get(dest)) {
                     distance.put(dest, new_dist);
                     precedent.put(dest, parent);
                     to_prec_connection.put(dest, con);
-                    arrival_time.put(dest, new_dist);
                 }
                 unsettledNodes.add(dest);
             });
@@ -91,6 +93,7 @@ public class Graph {
                         break;
                 }
                 message.insert(0, "\n" + df_out.format((first.departure_time) % 2400)
+                        + " -  " + df_out.format((last.arrival_time) % 2400)
                         + " : corsa " + last.name + " da " + station + " a " + arrival_station);
 
             }

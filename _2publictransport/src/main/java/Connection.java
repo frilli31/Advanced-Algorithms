@@ -1,6 +1,5 @@
 public class Connection {
     String name;
-    int key_arrival_station;
     int departure_time;
     int arrival_time;
 
