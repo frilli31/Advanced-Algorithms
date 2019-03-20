@@ -6,6 +6,8 @@ public class Main {
         long startTime = System.nanoTime();
 
         Graph g = GraphBuilder.build("public_transport_dataset");
+        Chart map = new Chart(g.stations);
+        g.set_map(map);
 
         System.out.println("Building graph: " + (System.nanoTime()-startTime)/1000000);
         startTime = System.nanoTime();
@@ -33,6 +35,9 @@ public class Main {
         System.out.println(g.calculateShortestPathFromSource(200417051  ,140701016, 2355));
         System.out.println("Execution : " + (System.nanoTime()-startTime)/1000000);
 
+        System.out.println("Wait for the chart...");
+        map.export_chart();
+        System.out.println("DONE!");
     }
 
 }

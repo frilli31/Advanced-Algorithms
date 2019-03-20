@@ -1,17 +1,30 @@
+import org.jfree.data.xy.XYSeries;
+
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
 import java.util.*;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 
 public class Graph {
     private Map<Integer, Map<Integer, List<Connection>>> adjs; // Map<source, Map<destination, arcs>
-    private Map<Integer, Station> stations;
+    Map<Integer, Station> stations;
+    Chart map;
 
     public Graph() {
         adjs = new HashMap<>();
         stations = new HashMap<>();
     }
 
+    public void set_map(Chart map) {
+        this.map = map;
+    }
+
+    public void add_station_name(int key, Station station) {
+        stations.put(key, station);
+    }
 
     public void add_station(int key) {
         adjs.putIfAbsent(key, new HashMap<>());
@@ -80,6 +93,9 @@ public class Graph {
             df_out.setGroupingSize(2);
 
             int station = destination;
+
+            XYSeries path = new XYSeries(source + " - " + destination);
+
             while (precedent.containsKey(station)) {
                 int arrival_station = station;
                 Connection last = to_prec_connection.get(arrival_station);
@@ -95,8 +111,13 @@ public class Graph {
                 message.insert(0, "\n" + df_out.format((first.departure_time) % 2400)
                         + " -  " + df_out.format((last.arrival_time) % 2400)
                         + " : corsa " + last.name + " da " + station + " a " + arrival_station);
-
+                Station departure = stations.get(station);
+                Station arrival = stations.get(arrival_station);
+                path.add(departure.x, departure.y);
+                path.add(arrival.x, arrival.y);
             }
+
+            this.map.add_route(path);
 
             message.insert(0, "Viaggio da " + source + " a " + destination + "\n"
                     + "Orario di partenza: " + df_out.format(start_time % 2400) + "\n"
