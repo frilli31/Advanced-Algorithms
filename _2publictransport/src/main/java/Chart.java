@@ -9,27 +9,43 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.chart.ChartUtilities;
 
-import java.awt.*;
+import java.awt.Color;
+import java.awt.BasicStroke;
 import java.io.File;
 import java.io.IOException;
-import java.util.Map;
+import java.util.*;
 import java.util.Random;
 
 public class Chart {
-    XYSeriesCollection dataset;
+    static XYSeriesCollection dataset;
+    static Map<Integer, Station> stations;
 
-    public Chart(Map<Integer, Station> stations_list) {
-        XYSeries stations = new XYSeries("Stations");
-        stations_list.forEach( (code, station) -> stations.add(station.x, station.y));
+    static { populate_stations(); }
+
+    public static void populate_stations() {
+        stations = ParseStation.parse();
+
+        XYSeries stations_series = new XYSeries("Stations");
+        stations.forEach( (code, station) -> stations_series.add(station.x, station.y));
         dataset = new XYSeriesCollection();
-        dataset.addSeries(stations);
+        dataset.addSeries(stations_series);
     }
 
-    public void add_route(XYSeries path) {
+    public Chart(List<Integer> route) {
+        XYSeries path = new XYSeries(route.get(0)+" - "+route.get(route.size()-1));
+        if(route.get(0) == 300000032)
+            System.out.println("problema");
+
+        route.stream().map(stations::get).forEachOrdered(item->{
+
+                    path.add(item.x, item.y);
+        });
         dataset.addSeries(path);
+        export_chart(path.getKey().toString());
+        dataset.removeSeries(path);
     }
 
-    public void export_chart() {
+    public void export_chart(String name) {
         JFreeChart xy_line_chart = ChartFactory.createXYLineChart(
                 "Luxembourg transport map",
                 "",
@@ -95,7 +111,7 @@ public class Chart {
 
         int width = 3000;
         int height = 1500;
-        File chart = new File("chart.jpeg");
+        File chart = new File(System.nanoTime() + " - "  + name + "_chart.jpeg");
         try {
             ChartUtilities.saveChartAsJPEG(chart, xy_line_chart, width, height);
         } catch (IOException e) {}

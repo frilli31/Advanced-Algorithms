@@ -47,29 +47,6 @@ public class GraphBuilder {
         } catch (IOException e) {
             throw new InstantiationError("Can' t find source folder " + "\n" + e.getLocalizedMessage());
         }
-
-        BufferedReader reader;
-        try {
-            reader = new BufferedReader(new FileReader(
-                    "public_transport_dataset/bfkoord"));
-            String line = reader.readLine();
-            while (line != null) {
-                if (!line.startsWith("*") && !line.startsWith("%")) {
-                    int code = Integer.parseInt(line.substring(0, 9));
-                    double x = Double.parseDouble(line.substring(12, 20));
-                    double y = Double.parseDouble(line.substring(22, 31));
-                    String name = line.split("% ")[1];
-
-                    Station s = new Station(name, x, y);
-                    g.add_station_name(code, s);
-                }
-                line = reader.readLine();
-            }
-            reader.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
         return g;
     }
 }
