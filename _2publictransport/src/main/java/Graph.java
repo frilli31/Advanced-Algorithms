@@ -175,11 +175,17 @@ public class Graph {
     }
 
     static double calculateGeoDistance(Station source, Station destination) {
-        double ac = Math.abs(destination.y - source.y);
-        double cb = Math.abs(destination.x - source.x);
-            
-        // Multiple geo distance by 100 to make it comparable with time distance
-        return Math.hypot(ac, cb) * 100;
+        final int R = 6371; // Radius of the earth
+
+        double latDistance = Math.toRadians(destination.y - source.y);
+        double lonDistance = Math.toRadians(destination.x - source.x);
+        double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
+                + Math.cos(Math.toRadians(source.y)) * Math.cos(Math.toRadians(destination.y))
+                * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        double distance = R * c; // Km
+
+        return distance;
     }
 
     static Long minutesDistance(Connection conn, LocalTime startTime) {
