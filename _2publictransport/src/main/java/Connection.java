@@ -1,15 +1,13 @@
+import java.time.LocalTime;
+
 public class Connection {
     String name;
-    int departure_time;
-    int arrival_time;
+    LocalTime departureTime;
+    LocalTime arrivalTime;
 
-    public Connection(String n, int departure_t, int arrival_t) {
+    public Connection(String n, String departure_t, String arrival_t) {
         name = n;
-        departure_time = departure_t;
-        arrival_time = arrival_t;
-    }
-
-    public int arrival_time() {
-        return arrival_time;
+        departureTime = LocalTime.of(Integer.valueOf(departure_t.substring(1, 3)) % 24, Integer.valueOf(departure_t.substring(3)));
+        arrivalTime = LocalTime.of(Integer.valueOf(arrival_t.substring(1, 3)) % 24, Integer.valueOf(arrival_t.substring(3)));
     }
 }

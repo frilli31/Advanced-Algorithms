@@ -14,7 +14,6 @@ import java.awt.BasicStroke;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
-import java.util.Random;
 
 public class Chart {
     static XYSeriesCollection dataset;
@@ -64,8 +63,6 @@ public class Chart {
         renderer.setSeriesShapesVisible(0, true);
         renderer.setSeriesShapesFilled(0, false);
         renderer.setSeriesPaint(0, Color.LIGHT_GRAY);
-
-        Random rand = new Random();
 
         for(int i = 0; i < dataset.getSeriesCount() - 1; i++) {
             renderer.setSeriesStroke ( i + 1, new BasicStroke (3.0f));
