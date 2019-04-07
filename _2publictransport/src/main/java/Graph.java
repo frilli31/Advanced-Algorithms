@@ -25,6 +25,53 @@ public class Graph {
         adjs.get(dest).add(new Connection(name, dep_time, arr_time));
     }
 
+    public Pair<String, List<Integer>> djkstraHeapSSSP(int source, int destination, LocalTime startTime) {
+        Set<Integer> settledNodes = new HashSet<>();
+        Map<Integer, Long> distance = new HashMap<>();
+        Map<Integer, LocalTime> arrivalTime = new HashMap<>();
+        Map<Integer, Integer> prev = new HashMap<>();
+        Map<Integer, Connection> prevConnection = new HashMap<>();
+        Heap unsettledNodes = new Heap(distance);
+
+        unsettledNodes.add(source);
+        distance.put(source, Long.valueOf(0));
+        arrivalTime.put(source, startTime);
+
+        while (unsettledNodes.size() != 0) {
+            int parent = unsettledNodes.extractMin();
+
+            if (parent == destination) break;
+
+            adjs.get(parent).entrySet().stream().filter(e -> !settledNodes.contains(e.getKey())).forEach(e -> {
+                int dest = e.getKey();
+                LocalTime parentArrivalTime = arrivalTime.get(parent);
+                Connection conn = e.getValue().stream().min((Connection a, Connection b) -> {
+                    Long minutesA = minutesDistance(a, parentArrivalTime);
+                    Long minutesB = minutesDistance(b, parentArrivalTime);
+
+                    // If the distance is equal remain in the same bus
+                    Boolean canRemainInBus = minutesA == minutesB && parent != source && prevConnection.get(parent).name.equals(a.name);
+        
+                    return minutesA < minutesB || canRemainInBus ? -1 : 1;
+                }).orElseThrow();
+                Long connDistance = distance.get(parent) + minutesDistance(conn, parentArrivalTime);
+
+                if (!distance.containsKey(dest) || connDistance < distance.get(dest)) {
+                    distance.put(dest, connDistance);
+                    arrivalTime.put(dest, conn.arrivalTime);
+                    prev.put(dest, parent);
+                    prevConnection.put(dest, conn);
+                    unsettledNodes.decreaseKey(dest, connDistance);
+                }
+                
+                unsettledNodes.add(dest);
+            });
+            settledNodes.add(parent);
+        }
+
+        return format_output(source, destination, startTime, arrivalTime, prev, prevConnection);
+    }
+
     public Pair<String, List<Integer>> djkstraSetSSSP(int source, int destination, LocalTime startTime) {
         Set<Integer> settledNodes = new HashSet<>();
         Set<Integer> unsettledNodes = new HashSet<>();

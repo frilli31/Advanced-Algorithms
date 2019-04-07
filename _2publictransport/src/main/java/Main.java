@@ -26,16 +26,16 @@ public class Main {
     }
 
     static void execute_path(Graph g, int source, int destination, LocalTime start_time) {
-        // long fstTime = System.currentTimeMillis();
+        long fstTime = System.currentTimeMillis();
 
-        // Pair<String, List<Integer>> fst = g.dijkstraHeap(source, destination, start_time);
-        // System.out.println(fst.getKey());
-        // System.out.println("Execution with heap: " + (System.currentTimeMillis() - fstTime));
-
+        Pair<String, List<Integer>> fst = g.djkstraHeapSSSP(source, destination, start_time);
+        System.out.println(fst.getKey());
+        System.out.println("Execution with heap: " + (System.currentTimeMillis() - fstTime));
+        
         long sndTime = System.currentTimeMillis();
         Pair<String, List<Integer>> snd = g.djkstraSetSSSP(source, destination, start_time);
-        System.out.println(snd.getKey());
-        System.out.println("Execution with djkstra Set: " + (System.currentTimeMillis() - sndTime));
+        System.out.println("Execution with Set: " + (System.currentTimeMillis() - sndTime));
+        System.out.println("____________________________________________________________");
         // new Chart(first.getValue());
     }
 
