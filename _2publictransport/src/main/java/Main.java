@@ -34,7 +34,13 @@ public class Main {
         
         long sndTime = System.currentTimeMillis();
         Pair<String, List<Integer>> snd = g.djkstraSetSSSP(source, destination, start_time);
+        System.out.println(snd.getKey());
         System.out.println("Execution with Set: " + (System.currentTimeMillis() - sndTime));
+
+        long trdTime = System.currentTimeMillis();
+        Pair<String, List<Integer>> trd = g.AStarSSSP(source, destination, start_time);
+        System.out.println(trd.getKey());
+        System.out.println("Execution with A*: " + (System.currentTimeMillis() - trdTime));
         System.out.println("____________________________________________________________");
         // new Chart(first.getValue());
     }

@@ -1,6 +1,6 @@
 import java.time.LocalTime;
 import static java.time.temporal.ChronoUnit.MINUTES;
-import java.util.Comparator;
+
 import java.util.*;
 
 import javafx.util.Pair;
@@ -23,6 +23,61 @@ public class Graph {
 
         adjs.putIfAbsent(dest, new ArrayList<>());
         adjs.get(dest).add(new Connection(name, dep_time, arr_time));
+    }
+
+    public Pair<String, List<Integer>> AStarSSSP(int source, int destination, LocalTime startTime) {
+        Map<Integer, Station> stations = ParseStation.parse();
+        Station sourceStation = stations.get(source);
+        Station destStation = stations.get(destination);
+        Set<Integer> settledNodes = new HashSet<>();
+        Map<Integer, Long> distance = new HashMap<>();
+        Map<Integer, Double> geoDistance = new HashMap<>();
+        Map<Integer, LocalTime> arrivalTime = new HashMap<>();
+        Map<Integer, Integer> prev = new HashMap<>();
+        Map<Integer, Connection> prevConnection = new HashMap<>();
+        AStarHeap unsettledNodes = new AStarHeap(distance, geoDistance);
+
+        unsettledNodes.add(source);
+        distance.put(source, Long.valueOf(0));
+        geoDistance.put(source, calculateGeoDistance(sourceStation, destStation));
+        arrivalTime.put(source, startTime);
+
+        while (unsettledNodes.size() != 0) {
+            int parent = unsettledNodes.extractMin();
+
+            if (parent == destination) break;
+
+            adjs.get(parent).entrySet().stream().filter(e -> !settledNodes.contains(e.getKey())).forEach(e -> {
+                int dest = e.getKey();
+                LocalTime parentArrivalTime = arrivalTime.get(parent);
+                Connection conn = e.getValue().stream().min((Connection a, Connection b) -> {
+                    Long minutesA = minutesDistance(a, parentArrivalTime);
+                    Long minutesB = minutesDistance(b, parentArrivalTime);
+
+                    // If the distance is equal remain in the same bus
+                    Boolean canRemainInBus = minutesA == minutesB && parent != source && prevConnection.get(parent).name.equals(a.name);
+        
+                    return minutesA < minutesB || canRemainInBus ? -1 : 1;
+                }).orElseThrow();
+                Long connDistance = distance.get(parent) + minutesDistance(conn, parentArrivalTime);
+                
+                if (!distance.containsKey(dest) || connDistance < distance.get(dest)) {
+                    Double connGeoDistance = calculateGeoDistance(stations.get(dest), destStation);
+
+                    distance.put(dest, connDistance);
+                    geoDistance.put(dest, connGeoDistance);
+                    arrivalTime.put(dest, conn.arrivalTime);
+                    prev.put(dest, parent);
+                    prevConnection.put(dest, conn);
+                    unsettledNodes.decreaseKey(dest, connDistance, connGeoDistance);
+                }
+                
+                unsettledNodes.add(dest);
+            });
+            settledNodes.add(parent);
+        }
+
+        return format_output(source, destination, startTime, arrivalTime, prev, prevConnection);
     }
 
     public Pair<String, List<Integer>> djkstraHeapSSSP(int source, int destination, LocalTime startTime) {
@@ -117,6 +172,14 @@ public class Graph {
         }
 
         return format_output(source, destination, startTime, arrivalTime, prev, prevConnection);
+    }
+
+    static double calculateGeoDistance(Station source, Station destination) {
+        double ac = Math.abs(destination.y - source.y);
+        double cb = Math.abs(destination.x - source.x);
+            
+        // Multiple geo distance by 100 to make it comparable with time distance
+        return Math.hypot(ac, cb) * 100;
     }
 
     static Long minutesDistance(Connection conn, LocalTime startTime) {
