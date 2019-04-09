@@ -31,17 +31,19 @@ public class Chart {
     }
 
     public Chart(List<Integer> route) {
-        XYSeries path = new XYSeries(route.get(0)+" - "+route.get(route.size()-1));
-        if(route.get(0) == 300000032)
-            System.out.println("problema");
-
-        route.stream().map(stations::get).forEachOrdered(item->{
-
-                    path.add(item.x, item.y);
-        });
-        dataset.addSeries(path);
-        export_chart(path.getKey().toString());
-        dataset.removeSeries(path);
+        String name = route.get(0)+" - "+route.get(route.size()-1);
+        ArrayList<XYSeries> series = new ArrayList<>();
+        for(int i=0; i<route.size()-1; i++) {
+            Station me = stations.get(route.get(i));
+            Station next = stations.get(route.get(i+1));
+            XYSeries s = new XYSeries(me.name+"-"+next.name);
+            s.add(me.x, me.y);
+            s.add(next.x, next.y);
+            series.add(s);
+        }
+        series.forEach(dataset::addSeries);
+        export_chart(name);
+        series.forEach(dataset::removeSeries);
     }
 
     public void export_chart(String name) {
@@ -69,29 +71,6 @@ public class Chart {
 
             Color c = Color.BLUE;
 
-            switch(i + 1) {
-                case 1:
-                    c = Color.BLUE;
-                    break;
-                case 2:
-                    c = Color.RED;
-                    break;
-                case 3:
-                    c = Color.GREEN;
-                    break;
-
-                case 4:
-                    c = Color.MAGENTA;
-                    break;
-
-                case 5:
-                    c = Color.ORANGE;
-                    break;
-                case 6:
-                    c = Color.CYAN;
-                    break;
-            }
-
             renderer.setSeriesPaint(i + 1, c);
             renderer.setSeriesShapesVisible(i + 1, true);
         }
@@ -106,11 +85,12 @@ public class Chart {
         range.setTickUnit(new NumberTickUnit(0.000001));
         range.setVisible(false);
 
-        int width = 3000;
+        int width = 1500;
         int height = 1500;
-        File chart = new File(System.nanoTime() + " - "  + name + "_chart.jpeg");
+        File chart = new File(System.nanoTime() + " - "  + name + ".jpeg");
         try {
             ChartUtilities.saveChartAsJPEG(chart, xy_line_chart, width, height);
         } catch (IOException e) {}
     }
 }
+

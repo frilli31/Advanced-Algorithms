@@ -42,7 +42,8 @@ public class Main {
         Pair<String, List<Integer>> snd = g.AStarSSSP(source, destination, start_time);
         System.out.println("Execution with A*: " + (System.currentTimeMillis() - sndTime));
         System.out.println("____________________________________________________________");
-        // new Chart(first.getValue());
+
+        new Chart(fst.getValue());
     }
 
 }
