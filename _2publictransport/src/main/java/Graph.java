@@ -29,149 +29,102 @@ public class Graph {
         Map<Integer, Station> stations = ParseStation.parse();
         Station sourceStation = stations.get(source);
         Station destStation = stations.get(destination);
-        Set<Integer> settledNodes = new HashSet<>();
-        Map<Integer, Long> distance = new HashMap<>();
+        Set<Integer> visitedNodes = new HashSet<>();
+        Map<Integer, Long> minDistance = new HashMap<>();
         Map<Integer, Double> geoDistance = new HashMap<>();
         Map<Integer, LocalTime> arrivalTime = new HashMap<>();
         Map<Integer, Integer> prev = new HashMap<>();
         Map<Integer, Connection> prevConnection = new HashMap<>();
-        AStarHeap unsettledNodes = new AStarHeap(distance, geoDistance);
+        AStarHeap unvisitedNodes = new AStarHeap(minDistance, geoDistance);
 
-        unsettledNodes.add(source);
-        distance.put(source, Long.valueOf(0));
+        unvisitedNodes.add(source);
+        minDistance.put(source, Long.valueOf(0));
         geoDistance.put(source, calculateGeoDistance(sourceStation, destStation));
         arrivalTime.put(source, startTime);
 
-        while (unsettledNodes.size() != 0) {
-            int parent = unsettledNodes.extractMin();
+        while (unvisitedNodes.size() != 0) {
+            int parent = unvisitedNodes.extractMin();
 
             if (parent == destination) break;
 
-            adjs.get(parent).entrySet().stream().filter(e -> !settledNodes.contains(e.getKey())).forEach(e -> {
+            adjs.get(parent).entrySet().stream().filter(e -> !visitedNodes.contains(e.getKey())).forEach(e -> {
                 int dest = e.getKey();
                 LocalTime parentArrivalTime = arrivalTime.get(parent);
                 Connection conn = e.getValue().stream().min((Connection a, Connection b) -> {
-                    Long minutesA = minutesDistance(a, parentArrivalTime);
-                    Long minutesB = minutesDistance(b, parentArrivalTime);
+                    Long minutesA = calculateMinDistance(a, parentArrivalTime);
+                    Long minutesB = calculateMinDistance(b, parentArrivalTime);
 
                     // If the distance is equal remain in the same bus
                     Boolean canRemainInBus = minutesA == minutesB && parent != source && prevConnection.get(parent).name.equals(a.name);
         
                     return minutesA < minutesB || canRemainInBus ? -1 : 1;
                 }).orElseThrow();
-                Long connDistance = distance.get(parent) + minutesDistance(conn, parentArrivalTime);
+                Long connDistance = minDistance.get(parent) + calculateMinDistance(conn, parentArrivalTime);
                 
-                if (!distance.containsKey(dest) || connDistance < distance.get(dest)) {
+                if (!minDistance.containsKey(dest) || connDistance < minDistance.get(dest)) {
                     Double connGeoDistance = calculateGeoDistance(stations.get(dest), destStation);
 
-                    distance.put(dest, connDistance);
+                    minDistance.put(dest, connDistance);
                     geoDistance.put(dest, connGeoDistance);
                     arrivalTime.put(dest, conn.arrivalTime);
                     prev.put(dest, parent);
                     prevConnection.put(dest, conn);
-                    unsettledNodes.decreaseKey(dest, connDistance, connGeoDistance);
+                    unvisitedNodes.decreaseKey(dest, connDistance, connGeoDistance);
                 }
                 
-                unsettledNodes.add(dest);
+                unvisitedNodes.add(dest);
             });
-            settledNodes.add(parent);
+            visitedNodes.add(parent);
         }
 
-        return format_output(source, destination, startTime, arrivalTime, prev, prevConnection);
+        return formatOutput(source, destination, startTime, arrivalTime, prev, prevConnection);
     }
 
     public Pair<String, List<Integer>> djkstraHeapSSSP(int source, int destination, LocalTime startTime) {
-        Set<Integer> settledNodes = new HashSet<>();
-        Map<Integer, Long> distance = new HashMap<>();
+        Set<Integer> visitedNodes = new HashSet<>();
+        Map<Integer, Long> minDistance = new HashMap<>();
         Map<Integer, LocalTime> arrivalTime = new HashMap<>();
-        Map<Integer, Integer> prev = new HashMap<>();
+        Map<Integer, Integer> prevStation = new HashMap<>();
         Map<Integer, Connection> prevConnection = new HashMap<>();
-        Heap unsettledNodes = new Heap(distance);
+        Heap unvisitedNotes = new Heap(minDistance);
 
-        unsettledNodes.add(source);
-        distance.put(source, Long.valueOf(0));
+        unvisitedNotes.add(source);
+        minDistance.put(source, Long.valueOf(0));
         arrivalTime.put(source, startTime);
 
-        while (unsettledNodes.size() != 0) {
-            int parent = unsettledNodes.extractMin();
+        while (unvisitedNotes.size() != 0) {
+            int parent = unvisitedNotes.extractMin();
 
             if (parent == destination) break;
 
-            adjs.get(parent).entrySet().stream().filter(e -> !settledNodes.contains(e.getKey())).forEach(e -> {
+            adjs.get(parent).entrySet().stream().filter(e -> !visitedNodes.contains(e.getKey())).forEach(e -> {
                 int dest = e.getKey();
                 LocalTime parentArrivalTime = arrivalTime.get(parent);
                 Connection conn = e.getValue().stream().min((Connection a, Connection b) -> {
-                    Long minutesA = minutesDistance(a, parentArrivalTime);
-                    Long minutesB = minutesDistance(b, parentArrivalTime);
+                    Long minutesA = calculateMinDistance(a, parentArrivalTime);
+                    Long minutesB = calculateMinDistance(b, parentArrivalTime);
 
                     // If the distance is equal remain in the same bus
                     Boolean canRemainInBus = minutesA == minutesB && parent != source && prevConnection.get(parent).name.equals(a.name);
         
                     return minutesA < minutesB || canRemainInBus ? -1 : 1;
                 }).orElseThrow();
-                Long connDistance = distance.get(parent) + minutesDistance(conn, parentArrivalTime);
+                Long connDistance = minDistance.get(parent) + calculateMinDistance(conn, parentArrivalTime);
 
-                if (!distance.containsKey(dest) || connDistance < distance.get(dest)) {
-                    distance.put(dest, connDistance);
+                if (!minDistance.containsKey(dest) || connDistance < minDistance.get(dest)) {
+                    minDistance.put(dest, connDistance);
                     arrivalTime.put(dest, conn.arrivalTime);
-                    prev.put(dest, parent);
+                    prevStation.put(dest, parent);
                     prevConnection.put(dest, conn);
-                    unsettledNodes.decreaseKey(dest, connDistance);
+                    unvisitedNotes.decreaseKey(dest, connDistance);
                 }
                 
-                unsettledNodes.add(dest);
+                unvisitedNotes.add(dest);
             });
-            settledNodes.add(parent);
+            visitedNodes.add(parent);
         }
 
-        return format_output(source, destination, startTime, arrivalTime, prev, prevConnection);
-    }
-
-    public Pair<String, List<Integer>> djkstraSetSSSP(int source, int destination, LocalTime startTime) {
-        Set<Integer> settledNodes = new HashSet<>();
-        Set<Integer> unsettledNodes = new HashSet<>();
-        Map<Integer, Long> distance = new HashMap<>();
-        Map<Integer, LocalTime> arrivalTime = new HashMap<>();
-        Map<Integer, Integer> prev = new HashMap<>();
-        Map<Integer, Connection> prevConnection = new HashMap<>();
-
-        unsettledNodes.add(source);
-        distance.put(source, Long.valueOf(0));
-        arrivalTime.put(source, startTime);
-
-        while (unsettledNodes.size() != 0) {
-            int parent = unsettledNodes.stream().min(Comparator.comparingLong(distance::get)).get();
-            unsettledNodes.remove(parent);
-
-            if (parent == destination) break;
-
-            adjs.get(parent).entrySet().stream().filter(e -> !settledNodes.contains(e.getKey())).forEach(e -> {
-                int dest = e.getKey();
-                LocalTime parentArrivalTime = arrivalTime.get(parent);
-                Connection conn = e.getValue().stream().min((Connection a, Connection b) -> {
-                    Long minutesA = minutesDistance(a, parentArrivalTime);
-                    Long minutesB = minutesDistance(b, parentArrivalTime);
-
-                    // If the distance is equal remain in the same bus
-                    Boolean canRemainInBus = minutesA == minutesB && parent != source && prevConnection.get(parent).name.equals(a.name);
-        
-                    return minutesA < minutesB || canRemainInBus ? -1 : 1;
-                }).orElseThrow();
-                Long connDistance = distance.get(parent) + minutesDistance(conn, parentArrivalTime);
-
-                if (!distance.containsKey(dest) || connDistance < distance.get(dest)) {
-                    distance.put(dest, connDistance);
-                    arrivalTime.put(dest, conn.arrivalTime);
-                    prev.put(dest, parent);
-                    prevConnection.put(dest, conn);
-                }
-                
-                unsettledNodes.add(dest);
-            });
-            settledNodes.add(parent);
-        }
-
-        return format_output(source, destination, startTime, arrivalTime, prev, prevConnection);
+        return formatOutput(source, destination, startTime, arrivalTime, prevStation, prevConnection);
     }
 
     static double calculateGeoDistance(Station source, Station destination) {
@@ -185,10 +138,10 @@ public class Graph {
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         double distance = R * c; // Km
 
-        return distance;
+        return distance / 120 * 60;
     }
 
-    static Long minutesDistance(Connection conn, LocalTime startTime) {
+    static Long calculateMinDistance(Connection conn, LocalTime startTime) {
         Boolean isInDay = afterOrEqual(conn.arrivalTime, conn.departureTime);
 
         if (afterOrEqual(conn.departureTime, startTime) && isInDay) {
@@ -208,8 +161,8 @@ public class Graph {
         return a.compareTo(b) >= 0;
     }
 
-    Pair<String, List<Integer>> format_output(int source, int destination, LocalTime startTime,
-            Map<Integer, LocalTime> arrivalTime, Map<Integer, Integer> prev,
+    Pair<String, List<Integer>> formatOutput(int source, int destination, LocalTime startTime,
+            Map<Integer, LocalTime> arrivalTime, Map<Integer, Integer> prevStation,
             Map<Integer, Connection> prevConnection) {
         if (arrivalTime.containsKey(destination)) {
             StringBuilder message = new StringBuilder();
@@ -217,7 +170,7 @@ public class Graph {
 
             int station = destination;
 
-            while (prev.containsKey(station)) {
+            while (prevStation.containsKey(station)) {
                 int arrival_station = station;
                 path.push(station);
                 Connection last = prevConnection.get(arrival_station);
@@ -225,10 +178,10 @@ public class Graph {
                 Connection iter = prevConnection.get(arrival_station);
                 while (last.name.equals(iter.name)) {
                     first = prevConnection.get(station);
-                    station = prev.get(station);
+                    station = prevStation.get(station);
                     iter = prevConnection.get(station);
                     path.push(station);
-                    if (!prev.containsKey(station))
+                    if (!prevStation.containsKey(station))
                         break;
                 }
                 message.insert(0,

@@ -22,7 +22,13 @@ public class Main {
 
         execute_path(g, 200417051, 140701016, LocalTime.of(12, 00));
 
-        execute_path(g, 200417051, 140701016, LocalTime.of(23, 55));
+        execute_path(g, 200415009, 170402007, LocalTime.of(3, 0));
+
+        execute_path(g, 221201005, 170402007, LocalTime.of(22, 0));
+
+        execute_path(g, 300000032, 150606008, LocalTime.of(22, 0));
+
+        execute_path(g, 170801002, 220402034, LocalTime.of(22, 0));
     }
 
     static void execute_path(Graph g, int source, int destination, LocalTime start_time) {
@@ -31,16 +37,10 @@ public class Main {
         Pair<String, List<Integer>> fst = g.djkstraHeapSSSP(source, destination, start_time);
         System.out.println(fst.getKey());
         System.out.println("Execution with heap: " + (System.currentTimeMillis() - fstTime));
-        
-        long sndTime = System.currentTimeMillis();
-        Pair<String, List<Integer>> snd = g.djkstraSetSSSP(source, destination, start_time);
-        System.out.println(snd.getKey());
-        System.out.println("Execution with Set: " + (System.currentTimeMillis() - sndTime));
 
-        long trdTime = System.currentTimeMillis();
-        Pair<String, List<Integer>> trd = g.AStarSSSP(source, destination, start_time);
-        System.out.println(trd.getKey());
-        System.out.println("Execution with A*: " + (System.currentTimeMillis() - trdTime));
+        long sndTime = System.currentTimeMillis();
+        Pair<String, List<Integer>> snd = g.AStarSSSP(source, destination, start_time);
+        System.out.println("Execution with A*: " + (System.currentTimeMillis() - sndTime));
         System.out.println("____________________________________________________________");
         // new Chart(first.getValue());
     }
