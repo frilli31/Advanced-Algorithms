@@ -10,8 +10,7 @@ public class ParseStation {
         Map<Integer, Station> stations = new HashMap<>();
         BufferedReader reader;
         try {
-            reader = new BufferedReader(new FileReader(
-                    "public_transport_dataset/bfkoord"));
+            reader = new BufferedReader(new FileReader("public_transport_dataset/bfkoord"));
             String line = reader.readLine();
             while (line != null) {
                 if (!line.startsWith("*") && !line.startsWith("%")) {
@@ -29,6 +28,6 @@ public class ParseStation {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return  stations;
+        return stations;
     }
 }
