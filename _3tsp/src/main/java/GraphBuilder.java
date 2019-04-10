@@ -21,14 +21,14 @@ public class GraphBuilder {
         try {
             return new String(Files.readAllBytes(Paths.get(fileName)));
         } catch (IOException e) {
-            throw new InstantiationError("Can't find file of graph "+fileName);
+            throw new InstantiationError("Can't find file of graph " + fileName);
         }
     }
 
     static int parseDimension(String fileContent) {
         Pattern patternOfDimension = Pattern.compile("DIMENSION\\s*:\\s*([0-9]+?)\\s");
         Matcher matcherOfDimension = patternOfDimension.matcher(fileContent);
-        if(matcherOfDimension.find())
+        if (matcherOfDimension.find())
             return Integer.valueOf(matcherOfDimension.group(1));
         throw new IllegalStateException("No dimension found in file");
     }
@@ -36,7 +36,7 @@ public class GraphBuilder {
     static String parseDistanceType(String fileContent) {
         Pattern patternOfDimension = Pattern.compile("EDGE_WEIGHT_TYPE\\s*:\\s*(\\S+?)\\s");
         Matcher matcherOfDimension = patternOfDimension.matcher(fileContent);
-        if(matcherOfDimension.find())
+        if (matcherOfDimension.find())
             return matcherOfDimension.group(1);
         throw new IllegalStateException("No distance type found in file");
     }
@@ -46,7 +46,7 @@ public class GraphBuilder {
         Matcher matcherOfDimension = patternOfDimension.matcher(fileContent);
         List<double[]> coordinates = new ArrayList<>(parseDimension(fileContent));
 
-        matcherOfDimension.results().forEach(x-> coordinates.add(
+        matcherOfDimension.results().forEach(x -> coordinates.add(
                 new double[]{
                         Double.parseDouble(x.group(1)),
                         Double.parseDouble(x.group(3))
@@ -59,8 +59,8 @@ public class GraphBuilder {
         int[][] matrix = new int[size][size];
 
         IntStream.range(0, size).forEach(source -> {
-            matrix[source][source]=0;
-            IntStream.range(source+1, size).forEach(destination ->
+            matrix[source][source] = 0;
+            IntStream.range(source + 1, size).forEach(destination ->
                     matrix[source][destination] = matrix[destination][source] = Distances.distance(coordinates.get(source), coordinates.get(destination), distanceType)
             );
         });
