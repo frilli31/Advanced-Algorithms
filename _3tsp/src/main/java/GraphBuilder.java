@@ -1,5 +1,3 @@
-import org.apache.commons.lang3.tuple.Pair;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -14,7 +12,7 @@ public class GraphBuilder {
     static public Graph get(String fileName) {
         String fileContent = readFile(fileName);
         String distanceType = parseDistanceType(fileContent);
-        List<Pair<Double, Double>> coordinatesOfPoints = parseCoordinates(fileContent);
+        List<double[]> coordinatesOfPoints = parseCoordinates(fileContent);
         int[][] populated_matrix = calculateMatrixOfDistances(coordinatesOfPoints, distanceType);
         return new Graph(populated_matrix);
     }
@@ -43,26 +41,27 @@ public class GraphBuilder {
         throw new IllegalStateException("No distance type found in file");
     }
 
-    static List<Pair<Double, Double>> parseCoordinates(String fileContent) {
+    static List<double[]> parseCoordinates(String fileContent) {
         Pattern patternOfDimension = Pattern.compile("\\d+\\s+([-+]?[0-9]+\\.?[0-9]*+([eE][-+]?[0-9]+)?)\\s+([-+]?[0-9]+\\.?[0-9]*+([eE][-+]?[0-9]+)?)\\n");
         Matcher matcherOfDimension = patternOfDimension.matcher(fileContent);
-        List<Pair<Double, Double>> coordinates = new ArrayList<>();
+        List<double[]> coordinates = new ArrayList<>(parseDimension(fileContent));
 
-        matcherOfDimension.results().forEach(x-> coordinates.add(Pair.of(
-                    Double.parseDouble(x.group(1)),
-                    Double.parseDouble(x.group(3))
-        )));
+        matcherOfDimension.results().forEach(x-> coordinates.add(
+                new double[]{
+                        Double.parseDouble(x.group(1)),
+                        Double.parseDouble(x.group(3))
+                }));
         return coordinates;
     }
 
-    static int[][] calculateMatrixOfDistances(List<Pair<Double, Double>> coordinates, String distanceType) {
+    static int[][] calculateMatrixOfDistances(List<double[]> coordinates, String distanceType) {
         final int size = coordinates.size();
         int[][] matrix = new int[size][size];
 
         IntStream.range(0, size).forEach(source -> {
             matrix[source][source]=0;
             IntStream.range(source+1, size).forEach(destination ->
-                    matrix[source][destination] = matrix[destination][source] = Distances.distance(source, destination, distanceType)
+                    matrix[source][destination] = matrix[destination][source] = Distances.distance(coordinates.get(source), coordinates.get(destination), distanceType)
             );
         });
         return matrix;
