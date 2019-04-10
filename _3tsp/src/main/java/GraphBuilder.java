@@ -13,14 +13,9 @@ public class GraphBuilder {
 
     static public Graph get(String fileName) {
         String fileContent = readFile(fileName);
-
-        int dimension = parseDimension(fileContent);
         String distanceType = parseDistanceType(fileContent);
-
         List<Pair<Double, Double>> coordinatesOfPoints = parseCoordinates(fileContent);
-
         int[][] populated_matrix = calculateMatrixOfDistances(coordinatesOfPoints, distanceType);
-
         return new Graph(populated_matrix);
     }
 
