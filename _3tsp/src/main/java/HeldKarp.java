@@ -3,21 +3,22 @@ import org.apache.commons.math3.util.Combinations;
 
 import java.util.BitSet;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.IntSupplier;
 import java.util.stream.IntStream;
 import java.util.stream.StreamSupport;
 
-public class HeldKarp implements Callable<Integer> {
-    final int size;
-    final Graph graph;
+public class HeldKarp implements IntSupplier {
+    private final int size;
+    private final Graph graph;
 
     public HeldKarp(Graph graph) {
         this.size = graph.size();
         this.graph = graph;
     }
 
-    public Integer call() {
+    @Override
+    public int getAsInt() {
         final int lastElement = size - 1;
 
         Map<Pair<BitSet, Integer>, Integer> distanceContainer = new ConcurrentHashMap<>();
@@ -26,11 +27,8 @@ public class HeldKarp implements Callable<Integer> {
                 distanceContainer.put(Pair.of(createBitSet(k), k), graph.get(k, lastElement))
         );
 
-        System.out.println(distanceContainer);
-
         IntStream.range(2, size).forEach(lengthOfSubset -> {
             Combinations subsets = new Combinations(lastElement, lengthOfSubset);
-            System.out.println("Considering combination of size " + lengthOfSubset);
             StreamSupport.stream(subsets.spliterator(), true).forEach(subset -> {
                 if (Thread.interrupted())
                     throw new RuntimeException();

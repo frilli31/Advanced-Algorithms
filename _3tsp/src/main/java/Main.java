@@ -1,19 +1,28 @@
 import com.google.common.util.concurrent.SimpleTimeLimiter;
 import com.google.common.util.concurrent.TimeLimiter;
 
-import java.util.concurrent.Callable;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.function.IntSupplier;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Main {
 
     public static void main(String[] args) {
-        Graph burma14 = GraphBuilder.get("tsp-dataset/burma14.tsp");
-        Graph ulyssses22 = GraphBuilder.get("tsp-dataset/ulysses22.tsp");
-        Graph eil51 = GraphBuilder.get("tsp-dataset/eil51.tsp");
+        List<Graph> graphs = Stream.of("burma14.tsp", "ulysses22.tsp", "eil51.tsp", "kroD100.tsp", "gr229.tsp", "d493.tsp", "dsj1000.tsp")
+                .map(filename -> "tsp-dataset/" + filename)
+                .map(GraphBuilder::get)
+                .collect(Collectors.toList());
 
-        timeLimitedHeldKarp(eil51);
+        graphs.forEach(Main::timeLimitedHeldKarp);
+
+        graphs.stream().map(ClosestInsertion::new)
+                .map(Main::catchExecutionTime)
+                .forEach(System.out::println);
+
     }
 
     static void timeLimitedHeldKarp(Graph graph) {
@@ -22,16 +31,24 @@ public class Main {
         HeldKarp target = new HeldKarp(graph);
 
         int timeBoundInms = 500;
-        Callable<Integer> proxy = timeLimiter.newProxy(target, Callable.class, timeBoundInms, TimeUnit.MILLISECONDS);
+        IntSupplier proxy = timeLimiter.newProxy(target, IntSupplier.class, timeBoundInms, TimeUnit.MILLISECONDS);
 
         try {
-            long startTime = System.currentTimeMillis();
-            System.out.println("The result is: " + proxy.call());
-            System.out.println("The execution took: " + (System.currentTimeMillis() - startTime) + " ms");
+            System.out.println(catchExecutionTime(proxy));
         } catch (Exception e) {
             System.out.println("The execution took longer then " + timeBoundInms + " ms");
         } finally {
             threadPool.shutdownNow();
         }
+    }
+
+    static String catchExecutionTime(IntSupplier function) {
+        long startTime = System.currentTimeMillis();
+        StringBuilder result = new StringBuilder("Result:\t");
+        result.append(function.getAsInt())
+                .append("\tExecution Time:\t")
+                .append(System.currentTimeMillis() - startTime)
+                .append(" ms");
+        return result.toString();
     }
 }
