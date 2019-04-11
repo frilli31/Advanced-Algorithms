@@ -43,10 +43,10 @@ public class Main {
     }
 
     static String catchExecutionTime(IntSupplier function) {
-        long startTime = System.currentTimeMillis();
         StringBuilder result = new StringBuilder("Result:\t");
+        long startTime = System.currentTimeMillis();
         result.append(function.getAsInt())
-                .append("\tExecution Time:\t")
+                .append("\t\tExecution Time:\t")
                 .append(System.currentTimeMillis() - startTime)
                 .append(" ms");
         return result.toString();

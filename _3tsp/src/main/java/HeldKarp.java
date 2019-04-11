@@ -29,6 +29,7 @@ public class HeldKarp implements IntSupplier {
 
         IntStream.range(2, size).forEach(lengthOfSubset -> {
             Combinations subsets = new Combinations(lastElement, lengthOfSubset);
+            //System.out.println("Considering combination of size " + lengthOfSubset);
             StreamSupport.stream(subsets.spliterator(), true).forEach(subset -> {
                 if (Thread.interrupted())
                     throw new RuntimeException();
