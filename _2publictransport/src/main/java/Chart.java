@@ -9,11 +9,12 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.chart.ChartUtilities;
 
-import java.awt.Color;
-import java.awt.BasicStroke;
+import java.awt.*;
+import java.awt.geom.Ellipse2D;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.List;
 
 public class Chart {
     static XYSeriesCollection dataset;
@@ -48,12 +49,14 @@ public class Chart {
 
     public void export_chart(String name) {
         JFreeChart xy_line_chart = ChartFactory.createXYLineChart(
-                "Luxembourg transport map",
+                name,
                 "",
                 "",
                 dataset,
                 PlotOrientation.VERTICAL,
                 true, true, false);
+
+        Shape shape  = new Ellipse2D.Double(0,0,2,2);
 
         XYPlot xyPlot = (XYPlot) xy_line_chart.getPlot();
         xyPlot.setDomainCrosshairVisible(true);
@@ -61,6 +64,7 @@ public class Chart {
         xyPlot.setBackgroundPaint(Color.WHITE);
 
         XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) xyPlot.getRenderer();
+        renderer.setSeriesShape(0, shape);
         renderer.setSeriesLinesVisible(0, false);
         renderer.setSeriesShapesVisible(0, true);
         renderer.setSeriesShapesFilled(0, false);
