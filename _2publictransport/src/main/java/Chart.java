@@ -54,7 +54,7 @@ public class Chart {
                 "",
                 dataset,
                 PlotOrientation.VERTICAL,
-                true, true, false);
+                false, true, false);
 
         Shape shape  = new Ellipse2D.Double(0,0,2,2);
 

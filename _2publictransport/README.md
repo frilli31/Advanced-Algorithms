@@ -1,4 +1,4 @@
-Allegro Luca
+Allegro Luca 1211142
 
 Hu Giovanni Jiayi 1206458
 
@@ -10,7 +10,7 @@ Mattiazzo Elena 1206695
 
 Il grafo usa una mappa dove le chiavi sono gli id delle stazioni, mentre il valore di ogni chiave è la mappa delle stazioni adiacenti con le relative corse. Ogni corsa ha come campi il nome della linea, orario di partenza e di arrivo.
 Quindi i nodi sono le stazioni, mentre gli archi sono le corse da una stazione a quella adiacente.
-Vi è inoltre una mappa creata in tempo di esecuzione dell'algoritmo che contiene i pesi degli archi, come il tempo di percorrenza in minuti della connessione più breve tra due stazioni in relazione al tempo di partenza. Non è stato possibile infatti farlo staticamente perchè il tempo da un nodo all'altro dipende anche dal tempo di attesa tra una corsa e l'altra e il tempo di arrivo alla stazione.
+Vi è inoltre una mappa creata in tempo di esecuzione dell'algoritmo che contiene i pesi degli archi, come il minor tempo di percorrenza in minuti dalla stazione di partenza ed in base all'orario stesso di partenza. Non è stato possibile infatti farlo staticamente perchè il tempo da un nodo A all'altro B dipende dal tempo di attesa tra una corsa e l'altra e il tempo di arrivo alla stazione A.
 
 Inoltre nell'implementazione in A* vi è anche una mappa delle stazioni per id, con le coordinate geografiche.
 
@@ -18,9 +18,9 @@ Inoltre nell'implementazione in A* vi è anche una mappa delle stazioni per id, 
 
 Si è risolto il problema confrontando due soluzioni: Dijkstra con heap e A*. Entrambi gli algoritmi sono molto simili e cambia solo il calcolo della priorità dalla heap normale alla heap di A*. Si procede dunque a descrivere l'algoritmo implementato in comune in entrambi i casi.
 
-I nodi sono stati divisi in visitati e non visitati come nell'algoritmo base di Dijkstra, con la seguente modifica: il calcolo del peso verso una stazione adiacente non è statico, bensì è calcolato dinamicamente come il tempo di tragitto minimo in relazione all'orario di arrivo alla stazione corrente. La peculiarità consiste quindi nel fatto che tra tutte le possibili corse da una stazione all'altra viene considerata solo quella con tempo di arrivo minore rispetto a quello di partenza.
+I nodi sono stati divisi in visitati e non visitati come nell'algoritmo base di Dijkstra, ed in particolare il calcolo del peso verso una stazione adiacente non è statico, bensì è calcolato dinamicamente come il tempo di tragitto minimo in relazione all'orario di arrivo alla stazione corrente. La peculiarità consiste quindi nel fatto che tra tutte le possibili corse da una stazione all'altra viene considerata solo quella con tempo di arrivo minore rispetto a quello di partenza.
 
-La coda di priorità dei nodi da visitare è implementata una Heap. Nell'algoritmo **non** A*, è una Heap con priorità in base alla distanza temporale (in minuti) dalla stazione di partenza. Nel caso A* invece tiene in conto anche dell'euristica, ovvero la distanza geografica tra il nodo non visitato e la destinazione finale. Quindi in quest'ultimo caso la priorità è data da `distanza_temporale_dalla_partenza + distanza_geografico_verso_destinazione`.
+La coda di priorità dei nodi da visitare è implementata come una Heap.  Nell'algoritmo **non** A*, è una Heap con priorità in base alla distanza temporale minima (in minuti) dalla stazione di partenza. Nel caso A* invece tiene in conto anche dell'euristica, ovvero la distanza geografica tra il nodo non visitato e la destinazione finale. Quindi in quest'ultimo caso la priorità è data da `distanza_temporale_dalla_partenza + distanza_geografica_verso_destinazione`.
 
 ### Analisi dell'euristica
 
@@ -32,22 +32,21 @@ minutiInOra = 60;
 euristica = distanza_verso_destinazione / velocità * minutiInOra
 ```
 
-Sono state tuttavia notate le seguenti difficoltà:
+Tuttavia è stata notata la seguente difficoltà:
 
-1. L'euristica deve essere ammissibile per cui la velocità considerata è quella dei treni che è il mezzo più veloce, tuttavia i valori ottenuti diventano insignificanti in quanto gli autobus sono la maggioranza dei viaggi. 
+L'euristica deve essere ammissibile per cui la velocità considerata è quella dei treni che è il mezzo più veloce, tuttavia i valori ottenuti diventano insignificanti in quanto gli autobus sono la maggioranza dei viaggi. 
 
-    Di conseguenza quindi i tempi di calcolo di A* peggiorano solo rispetto ad una normale heap senza euristica a causa dell'overhead. Nelle esecuzioni effettuate si nota difatti un'esecuzione nettamente più celere rispetto allo heap normale solo nel caso seguente, in cui analizzando i dati della corsa si vede che il mezzo preso è un treno. In questo caso l'euristica diventa significativa ed il tempo di esecuzione è nettamente minore.
+Di conseguenza quindi i tempi di calcolo di A* peggiorano solo rispetto ad una normale heap senza euristica a causa dell'overhead. Nelle esecuzioni effettuate si nota difatti un'esecuzione nettamente più celere rispetto allo heap normale solo nel caso seguente, in cui analizzando i dati della corsa si vede che il mezzo preso è un treno. In questo caso l'euristica diventa significativa ed il tempo di esecuzione è nettamente minore.
 
+```
+Viaggio da 200417051 a 140701016
+Orario di partenza: 12:00
+Orario di arrivo: 12:43
+12:20 -  12:43 : corsa 03712 C82--- da 200417051 a 140701016
+Execution with heap: 31
+Execution with A*: 15
+```
     ```
-    Viaggio da 200417051 a 140701016
-    Orario di partenza: 12:00
-    Orario di arrivo: 12:43
-    12:20 -  12:43 : corsa 03712 C82--- da 200417051 a 140701016
-    Execution with heap: 31
-    Execution with A*: 15
-    ```
-2. E' possibile notare che nei viaggi di più breve distanza risulta più efficiente A* in quanto tramite l'euristica viene fatta un'approssimazione migliore della prossima stazione da raggiungere, rispetto  Dijkstra che invece valuta tutte le diverse possibilità.
-
 ## Domanda 3
 
 I tempi di esecuzione sono i seguenti:
@@ -168,6 +167,5 @@ Execution with A*: 18
 ![](170801002_220402034.jpeg)
 ## Domanda 4
 
-Le soluzioni sembrano ottimali. Durante l'implementazione è stato notato inizialmente il fatto che in alcuni casi, tra soluzioni equivalenti, veniva scelta una con tanti cambi di corse appartenenti a linee diverse. Per tale motivo, nella scelta della corsa ottimale, viene tenuto anche conto del fatto di poter rimanere sullo stesso mezzo qualora i tempi di arrivi siano uguali tra due corse diverse. 
+Le soluzioni sembrano ottimali confrontate con i risultati di Google Maps. Durante l'implementazione è stato notato inizialmente il fatto che in alcuni casi, tra soluzioni equivalenti, venisse scelta una con tanti cambi di corse appartenenti a linee diverse. Per tale motivo, nella scelta della corsa ottimale, viene tenuto anche conto del fatto di poter rimanere sullo stesso mezzo qualora i tempi di arrivi siano uguali tra due corse diverse. 
 
-Come ulteriore conferma sono stati confrontati i risultati ottenuti con quelli forniti da Google Maps e coincidono.
