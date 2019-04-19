@@ -46,7 +46,7 @@ Orario di arrivo: 12:43
 Execution with heap: 31
 Execution with A*: 15
 ```
-    ```
+
 ## Domanda 3
 
 I tempi di esecuzione sono i seguenti:
