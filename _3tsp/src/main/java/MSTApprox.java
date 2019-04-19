@@ -9,8 +9,12 @@ public class MSTApprox implements IntSupplier {
         this.size = graph.size();
     }
 
+
+    @Override
     public int getAsInt() {
         // TODO
+
+        // TODO Prim Algorithm
         return  0;
     }
 }
