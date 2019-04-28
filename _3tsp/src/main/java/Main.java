@@ -23,6 +23,8 @@ public class Main {
                 .map(Main::catchExecutionTime)
                 .forEach(System.out::println);
 
+        System.out.println("Algoritmo 2-approssimato");
+        graphs.forEach(x -> new MSTApprox(x).primMST());
     }
 
     static void timeLimitedHeldKarp(Graph graph) {
