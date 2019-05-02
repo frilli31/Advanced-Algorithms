@@ -6,7 +6,7 @@ import java.util.stream.Stream;
 public class Main {
 
     public static void main(String[] args) {
-        List<Graph> graphs = Stream.of("burma14", "ulysses22", "eil51", "kroD100", "gr229", "d493", "dsj1000")
+        List<Graph> graphs = Stream.of("burma14", "ulysses22", "eil51", "kroD100", "gr229", "d493")
                 .map(GraphBuilder::get).collect(Collectors.toList());
 
         graphs.forEach((graph) -> {

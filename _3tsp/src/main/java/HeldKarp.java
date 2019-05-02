@@ -40,8 +40,8 @@ public class HeldKarp {
             IntStream.range(2, size).forEach(lengthOfSubset -> {
                 Combinations subsets = new Combinations(lastElement, lengthOfSubset);
                 StreamSupport.stream(subsets.spliterator(), true).forEach(subset -> {
-                    if (Thread.interrupted())
-                        throw new RuntimeException();
+                    if (Thread.interrupted()) throw new RuntimeException();
+
                     BitSet myBitSet = createBitSet(subset);
                     for (int k : subset) {
                         BitSet previous = (BitSet) myBitSet.clone();
@@ -68,6 +68,8 @@ public class HeldKarp {
             System.out.println("Timeout");
         } catch (Exception e) {
             System.out.println("Caught exception" + e.getCause());
+        } finally {
+            executor.shutdownNow();
         }
 
         BitSet allExceptLast = new BitSet(size);
@@ -102,18 +104,21 @@ public class HeldKarp {
         Future<Integer> future = executor.submit(() -> visit(0, nodes));
 
         try {
-            return future.get(2, TimeUnit.SECONDS);
+            return future.get(1, TimeUnit.SECONDS);
         } catch (TimeoutException e) {
-            future.cancel(true);
             System.out.println("Timeout");
         } catch (Exception e) {
             System.out.println("Caught exception" + e.getCause());
+        } finally {
+            executor.shutdownNow();
         }
 
         return distances.getOrDefault(distances.get(Pair.of(0, nodes)), Integer.MAX_VALUE);
     }
 
     private int visit(Integer lastNode, Set<Integer> nodes) {
+        if (Thread.interrupted()) throw new RuntimeException();
+        
         Pair<Integer, Set<Integer>> pair = Pair.of(lastNode, nodes);
 
         if (nodes.size() == 1 && nodes.contains(lastNode))
