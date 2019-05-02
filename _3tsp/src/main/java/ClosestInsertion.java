@@ -1,9 +1,8 @@
 import java.util.*;
-import java.util.function.IntSupplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class ClosestInsertion implements IntSupplier {
+public class ClosestInsertion {
     private int size;
     private Graph graph;
 
@@ -16,8 +15,7 @@ public class ClosestInsertion implements IntSupplier {
     }
 
 
-    @Override
-    public int getAsInt() {
+    public int calculateWeight() {
         init();
 
         while (!unvisitedNodes.isEmpty()) {
@@ -25,6 +23,7 @@ public class ClosestInsertion implements IntSupplier {
             insertion(nodeToInsert);
             unvisitedNodes.remove(nodeToInsert);
         }
+        
         return lengtOfPath();
     }
 

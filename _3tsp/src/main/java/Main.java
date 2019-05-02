@@ -12,16 +12,18 @@ import java.util.stream.Stream;
 public class Main {
 
     public static void main(String[] args) {
-        List<Graph> graphs = Stream.of("burma14.tsp", "ulysses22.tsp", "eil51.tsp", "kroD100.tsp", "gr229.tsp", "d493.tsp", "dsj1000.tsp")
-                .map(filename -> "tsp-dataset/" + filename)
-                .map(GraphBuilder::get)
-                .collect(Collectors.toList());
+        List<Graph> graphs = Stream.of("burma14", "ulysses22", "eil51", "kroD100", "gr229", "d493").map(GraphBuilder::get).collect(Collectors.toList());
 
         graphs.forEach(Main::timeLimitedHeldKarp);
 
-        graphs.stream().map(ClosestInsertion::new)
-                .map(Main::catchExecutionTime)
-                .forEach(System.out::println);
+        graphs.stream().forEach((graph) -> {
+            ClosestInsertion heuristic = new ClosestInsertion(graph);
+            long startTime = System.currentTimeMillis();
+            int weight = heuristic.calculateWeight();
+            long duration = System.currentTimeMillis() - startTime;
+
+            System.out.println(graph.name + ": " + weight + " in " + duration + "ms");
+        });
 
         System.out.println("Algoritmo 2-approssimato");
         graphs.forEach(x -> new MSTApprox(x).primMST());
@@ -47,10 +49,8 @@ public class Main {
     static String catchExecutionTime(IntSupplier function) {
         StringBuilder result = new StringBuilder("Result:\t");
         long startTime = System.currentTimeMillis();
-        result.append(function.getAsInt())
-                .append("\t\tExecution Time:\t")
-                .append(System.currentTimeMillis() - startTime)
-                .append(" ms");
+        result.append(function.getAsInt()).append("\t\tExecution Time:\t")
+                .append(System.currentTimeMillis() - startTime).append(" ms");
         return result.toString();
     }
 }

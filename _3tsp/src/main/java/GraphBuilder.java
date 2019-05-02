@@ -10,11 +10,11 @@ import java.util.stream.IntStream;
 public class GraphBuilder {
 
     static public Graph get(String fileName) {
-        String fileContent = readFile(fileName);
+        String fileContent = readFile("tsp-dataset/" + fileName + ".tsp");
         String distanceType = parseDistanceType(fileContent);
         List<double[]> coordinatesOfPoints = parseCoordinates(fileContent);
         int[][] populated_matrix = calculateMatrixOfDistances(coordinatesOfPoints, distanceType);
-        return new Graph(populated_matrix);
+        return new Graph(fileName, populated_matrix);
     }
 
     static String readFile(String fileName) {
@@ -26,7 +26,7 @@ public class GraphBuilder {
     }
 
     static int parseDimension(String fileContent) {
-        Pattern patternOfDimension = Pattern.compile("DIMENSION\\s*:\\s*([0-9]+?)\\s");
+        Pattern patternOfDimension = Pattern.compile("DIMENSION\\W+(\\d+)\\s");
         Matcher matcherOfDimension = patternOfDimension.matcher(fileContent);
         if (matcherOfDimension.find())
             return Integer.valueOf(matcherOfDimension.group(1));
@@ -34,7 +34,7 @@ public class GraphBuilder {
     }
 
     static String parseDistanceType(String fileContent) {
-        Pattern patternOfDimension = Pattern.compile("EDGE_WEIGHT_TYPE\\s*:\\s*(\\S+?)\\s");
+        Pattern patternOfDimension = Pattern.compile("EDGE_WEIGHT_TYPE\\W+(\\w+)\\s");
         Matcher matcherOfDimension = patternOfDimension.matcher(fileContent);
         if (matcherOfDimension.find())
             return matcherOfDimension.group(1);
@@ -42,15 +42,13 @@ public class GraphBuilder {
     }
 
     static List<double[]> parseCoordinates(String fileContent) {
-        Pattern patternOfDimension = Pattern.compile("\\d+\\s+([-+]?[0-9]+\\.?[0-9]*+([eE][-+]?[0-9]+)?)\\s+([-+]?[0-9]+\\.?[0-9]*+([eE][-+]?[0-9]+)?)\\n");
+        Pattern patternOfDimension = Pattern.compile(" *(\\d+) +(\\S+) +(\\S+)\\n");
         Matcher matcherOfDimension = patternOfDimension.matcher(fileContent);
         List<double[]> coordinates = new ArrayList<>(parseDimension(fileContent));
 
-        matcherOfDimension.results().forEach(x -> coordinates.add(
-                new double[]{
-                        Double.parseDouble(x.group(1)),
-                        Double.parseDouble(x.group(3))
-                }));
+        matcherOfDimension.results().forEach(x -> {
+            coordinates.add(new double[] { Double.parseDouble(x.group(2)), Double.parseDouble(x.group(3)) });
+        });
         return coordinates;
     }
 
@@ -60,9 +58,9 @@ public class GraphBuilder {
 
         IntStream.range(0, size).forEach(source -> {
             matrix[source][source] = 0;
-            IntStream.range(source + 1, size).forEach(destination ->
-                    matrix[source][destination] = matrix[destination][source] = Distances.distance(coordinates.get(source), coordinates.get(destination), distanceType)
-            );
+            IntStream.range(source + 1, size)
+                    .forEach(destination -> matrix[source][destination] = matrix[destination][source] = Distances
+                            .distance(coordinates.get(source), coordinates.get(destination), distanceType));
         });
         return matrix;
     }

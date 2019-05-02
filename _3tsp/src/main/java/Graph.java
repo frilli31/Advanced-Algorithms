@@ -1,7 +1,9 @@
 public class Graph {
+    final String name;
     final int[][] matrixOfDistances;
 
-    public Graph(int[][] matrix) {
+    public Graph(String n, int[][] matrix) {
+        name = n;
         matrixOfDistances = matrix;
     }
 
