@@ -35,7 +35,7 @@ public class MSTApprox {
         return min_index;
     }
 
-    void treeBuilder(int parent[], int graph[][]) {
+    int treeBuilder(int parent[], int graph[][]) {
 
         List<Node> nodes = new ArrayList<>();
 
@@ -64,10 +64,10 @@ public class MSTApprox {
             totalWeight = totalWeight + graph[nodeA][nodeB];
         }
 
-        System.out.println(this.size + " " + totalWeight);
+        return totalWeight;
     }
 
-    void primMST() {
+    int primMST() {
         int parent[] = new int[this.size];
         int key[] = new int [this.size];
         Boolean mstSet[] = new Boolean[this.size];
@@ -91,6 +91,6 @@ public class MSTApprox {
                 }
         }
 
-        treeBuilder(parent, graph);
+        return treeBuilder(parent, graph);
     }
 }

@@ -21,6 +21,7 @@ public class HeldKarp {
     private final Graph graph;
 
     private Map<Pair<Integer, Set<Integer>>, Integer> distances;
+    private Set<Integer> wholeSet;
 
     public HeldKarp(Graph graph) {
         this.size = graph.size();
@@ -79,7 +80,7 @@ public class HeldKarp {
             Pair<BitSet, Integer> pair = Pair.of(allExceptLast, k);
             return distanceContainer.containsKey(pair)
                 ? distanceContainer.get(pair) + graph.get(k, lastElement)
-                : Integer.MAX_VALUE;
+                : -1;
         }).min().orElse(-1);
     }
 
@@ -97,14 +98,14 @@ public class HeldKarp {
     }
 
     public int calculatePathWeightDynamic() {
-        Set<Integer> nodes = IntStream.range(1, size).boxed().collect(Collectors.toSet());
+        wholeSet = IntStream.range(1, size).boxed().collect(Collectors.toSet());
         distances = new HashMap<>();
 
         ExecutorService executor = Executors.newFixedThreadPool(1);
-        Future<Integer> future = executor.submit(() -> visit(0, nodes));
+        Future<Integer> future = executor.submit(() -> visit(0, wholeSet, 0));
 
         try {
-            return future.get(1, TimeUnit.SECONDS);
+            return future.get(10, TimeUnit.SECONDS);
         } catch (TimeoutException e) {
             System.out.println("Timeout");
         } catch (Exception e) {
@@ -113,19 +114,28 @@ public class HeldKarp {
             executor.shutdownNow();
         }
 
-        return distances.getOrDefault(distances.get(Pair.of(0, nodes)), Integer.MAX_VALUE);
+        System.out.println(distances.size());
+
+        return distances.getOrDefault(Pair.of(0, wholeSet), -1);
     }
 
-    private int visit(Integer lastNode, Set<Integer> nodes) {
+    private int visit(Integer lastNode, Set<Integer> nodes, Integer distSoFar) {
         if (Thread.interrupted()) throw new RuntimeException();
-        
+
         Pair<Integer, Set<Integer>> pair = Pair.of(lastNode, nodes);
 
-        if (nodes.size() == 1 && nodes.contains(lastNode))
-            return graph.get(lastNode, 0);
+        if (nodes.size() == 1 && nodes.contains(lastNode)) {
+            // Save partial solution
+            if (distSoFar < distances.getOrDefault(Pair.of(0, wholeSet), Integer.MAX_VALUE)) {
+                distances.put(Pair.of(0, wholeSet), distSoFar);
+            }
 
-        if (distances.get(pair) != null)
+            return graph.get(lastNode, 0);
+        }
+
+        if (distances.get(pair) != null) {
             return distances.get(pair);
+        }
 
         int mindist = Integer.MAX_VALUE;
 
@@ -133,8 +143,9 @@ public class HeldKarp {
         notLastNodes.remove(lastNode);
 
         for (Integer node : notLastNodes) {
-            int distSet = visit(node, notLastNodes);
+            int distSet = visit(node, notLastNodes, distSoFar + graph.get(node, lastNode));
             int distFromLast = distSet + graph.get(node, lastNode);
+
             if (distFromLast < mindist) {
                 mindist = distFromLast;
             }
