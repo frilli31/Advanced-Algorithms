@@ -1,15 +1,8 @@
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.commons.math3.util.Combinations;
 
 import java.util.BitSet;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.StreamSupport;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -49,26 +42,21 @@ public class HeldKarp {
     }
 
     private int visit(Integer lastNode, BitSet nodes, Integer distSoFar) {
-        // System.out.println(lastNode + " " + nodes);
         if (Thread.interrupted()) throw new RuntimeException();
 
         Pair<Integer, BitSet> pair = Pair.of(lastNode, nodes);
 
         if (distances.get(pair) != null) {
-            // System.out.println("Cache hit");
             return distances.get(pair);
         }
 
         if (nodes.cardinality() == size - 1 && !nodes.get(lastNode)) {
-            // System.out.println("Caso base");
             Integer weight = graph.get(lastNode, 0);
 
             // Save partial solution
             if (distSoFar < distances.getOrDefault(Pair.of(0, wholeSet), Integer.MAX_VALUE)) {
                 distances.put(Pair.of(0, wholeSet), distSoFar + weight);
             }
-
-            // System.out.println("Partial solution " + distances.get(Pair.of(0, wholeSet)));
 
             return weight;
         }
@@ -87,8 +75,6 @@ public class HeldKarp {
             if (distFromLast < mindist) {
                 mindist = distFromLast;
             }
-
-            // System.out.println("mindist " + mindist);
 
             node = notLastNodes.nextClearBit(node + 1);
         }
