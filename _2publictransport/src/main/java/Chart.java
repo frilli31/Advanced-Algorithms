@@ -9,19 +9,20 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.chart.ChartUtilities;
 
-import java.awt.Color;
-import java.awt.BasicStroke;
+import java.awt.*;
+import java.awt.geom.Ellipse2D;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.List;
 
 public class Chart {
     static XYSeriesCollection dataset;
     static Map<Integer, Station> stations;
 
-    static { populate_stations(); }
+    static { populateStations(); }
 
-    public static void populate_stations() {
+    public static void populateStations() {
         stations = ParseStation.parse();
 
         XYSeries stations_series = new XYSeries("Stations");
@@ -31,7 +32,7 @@ public class Chart {
     }
 
     public Chart(List<Integer> route) {
-        String name = route.get(0)+" - "+route.get(route.size()-1);
+        String name = route.get(0)+"_"+route.get(route.size()-1);
         ArrayList<XYSeries> series = new ArrayList<>();
         for(int i=0; i<route.size()-1; i++) {
             Station me = stations.get(route.get(i));
@@ -42,18 +43,20 @@ public class Chart {
             series.add(s);
         }
         series.forEach(dataset::addSeries);
-        export_chart(name);
+        exportChart(name);
         series.forEach(dataset::removeSeries);
     }
 
-    public void export_chart(String name) {
+    public void exportChart(String name) {
         JFreeChart xy_line_chart = ChartFactory.createXYLineChart(
-                "Luxembourg transport map",
+                name,
                 "",
                 "",
                 dataset,
                 PlotOrientation.VERTICAL,
-                true, true, false);
+                false, true, false);
+
+        Shape shape  = new Ellipse2D.Double(0,0,2,2);
 
         XYPlot xyPlot = (XYPlot) xy_line_chart.getPlot();
         xyPlot.setDomainCrosshairVisible(true);
@@ -61,6 +64,7 @@ public class Chart {
         xyPlot.setBackgroundPaint(Color.WHITE);
 
         XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) xyPlot.getRenderer();
+        renderer.setSeriesShape(0, shape);
         renderer.setSeriesLinesVisible(0, false);
         renderer.setSeriesShapesVisible(0, true);
         renderer.setSeriesShapesFilled(0, false);
@@ -68,9 +72,7 @@ public class Chart {
 
         for(int i = 0; i < dataset.getSeriesCount() - 1; i++) {
             renderer.setSeriesStroke ( i + 1, new BasicStroke (3.0f));
-
             Color c = Color.BLUE;
-
             renderer.setSeriesPaint(i + 1, c);
             renderer.setSeriesShapesVisible(i + 1, true);
         }
@@ -87,7 +89,7 @@ public class Chart {
 
         int width = 1500;
         int height = 1500;
-        File chart = new File(System.nanoTime() + " - "  + name + ".jpeg");
+        File chart = new File(name + ".jpeg");
         try {
             ChartUtilities.saveChartAsJPEG(chart, xy_line_chart, width, height);
         } catch (IOException e) {}
