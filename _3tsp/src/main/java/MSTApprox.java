@@ -2,6 +2,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class MSTApprox {
     private int[][] graph;
@@ -38,24 +40,22 @@ public class MSTApprox {
 
 
     int primMST() {
-        Integer key[] = new Integer[size];
-        Integer pi[] = new Integer[size];
-        Boolean mstSet[] = new Boolean[this.size];
-        Map<Integer, Integer> distance = new HashMap<>();
+        Integer[] key = new Integer[size];
+        Integer[] pi = new Integer[size];
+        Boolean[] mstSet = new Boolean[this.size];
 
         for(int i=0; i<size; i++) {
             key[i] = Integer.MAX_VALUE;
-            pi[i] = null;
             mstSet[i] = false;
-            distance.put(i, graph[0][i]);
         }
 
         key[0] = 0;
-        MinHeap q = new MinHeap(distance);
 
-        for(int i = 0; i< size; i++) {
-            q.add(i);
-        }
+        List<Integer> queue = IntStream.range(0, size).boxed().collect(Collectors.toList());
+        MinHeap q = new MinHeap(key);
+
+        q.buildHeap(queue);
+
         while(q.size() != 0) {
             int u = q.extractMin();
             mstSet[u] = true;
