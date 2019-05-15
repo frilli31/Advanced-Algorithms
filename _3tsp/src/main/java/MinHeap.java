@@ -3,12 +3,10 @@ import java.util.*;
 public class MinHeap {
     List<Integer> queue;
     Map<Integer, Integer> positionByNode;
-    Map<Integer, Integer> distance;
+    Integer[] distance;
 
-    public MinHeap(Map<Integer, Integer> distance) {
-        this.queue = new ArrayList<>();
+    public MinHeap(Integer[] distance) {
         this.distance = distance;
-        this.positionByNode = new HashMap<>();
     }
 
     int left(int i) {
@@ -50,7 +48,7 @@ public class MinHeap {
 
         Integer i = positionByNode.get(node);
         if(getScore(i) < dist) return false;
-        distance.put(node, dist);
+        distance[node] = dist;
         bubbleUp(i);
         return true;
     }
@@ -89,9 +87,24 @@ public class MinHeap {
         }
     }
 
+    void buildHeap(List<Integer> q) {        
+        this.queue = q;
+        this.positionByNode = new HashMap<>();
+
+        Integer n = q.size();
+
+        for (int i = 0; i < n; i++) {
+            this.positionByNode.put(i, i);
+        }
+
+        for (int i = 0; i < Math.floor(n / 2); i++) {
+            trickeDown(i);
+        }
+    }
+
     private int getScore(Integer i) {
         Integer node = queue.get(i);
-        return distance.get(node);
+        return distance[node];
     }
 
     void printHeap(int pos) {
