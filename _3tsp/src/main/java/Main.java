@@ -9,25 +9,25 @@ public class Main {
         List<Graph> graphs = Stream.of("burma14", "ulysses22", "eil51", "kroD100", "gr229", "d493", "dsj1000")
                 .map(GraphBuilder::get).collect(Collectors.toList());
 
-        System.out.println("\nHeldKarp");
-        graphs.forEach((graph) -> {
-            HeldKarp solution = new HeldKarp(graph);
-            long startTime = System.currentTimeMillis();
-            int weight = solution.calculatePathWeightDynamic();
-            long duration = System.currentTimeMillis() - startTime;
+        // System.out.println("\nHeldKarp");
+        // graphs.forEach((graph) -> {
+        //     HeldKarp solution = new HeldKarp(graph);
+        //     long startTime = System.currentTimeMillis();
+        //     int weight = solution.calculatePathWeightDynamic();
+        //     long duration = System.currentTimeMillis() - startTime;
 
-            System.out.println(graph.name + ": " + weight + " in " + duration + "ms");
-        });
+        //     System.out.println(graph.name + ": " + weight + " in " + duration + "ms");
+        // });
 
-        System.out.println("\nClosestInsertion");
-        graphs.stream().forEach((graph) -> {
-            ClosestInsertion heuristic = new ClosestInsertion(graph);
-            long startTime = System.currentTimeMillis();
-            int weight = heuristic.calculatePathWeight();
-            long duration = System.currentTimeMillis() - startTime;
+        // System.out.println("\nClosestInsertion");
+        // graphs.stream().forEach((graph) -> {
+        //     ClosestInsertion heuristic = new ClosestInsertion(graph);
+        //     long startTime = System.currentTimeMillis();
+        //     int weight = heuristic.calculatePathWeight();
+        //     long duration = System.currentTimeMillis() - startTime;
 
-            System.out.println(graph.name + ": " + weight + " in " + duration + "ms");
-        });
+        //     System.out.println(graph.name + ": " + weight + " in " + duration + "ms");
+        // });
 
         System.out.println("\nMST 2-approssimato");
         graphs.stream().forEach((graph) -> {

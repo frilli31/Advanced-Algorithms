@@ -5,7 +5,6 @@ import java.util.stream.IntStream;
 public class ClosestInsertion {
     private int size;
     private Graph graph;
-
     private Set<Integer> unvisitedNodes;
     private List<Integer> path;
 
@@ -31,14 +30,44 @@ public class ClosestInsertion {
         path = new LinkedList<>();
         path.add(0);
         int bestNode = unvisitedNodes.stream().min(Comparator.comparingInt(x -> graph.get(0, x))).orElseThrow();
+
         path.add(bestNode);
+        path.add(0);
         unvisitedNodes.remove(bestNode);
     }
 
     int selection() {
+        int minDistance = Integer.MAX_VALUE;
+        int k = 0;
+        for(int i = 0; i < path.size(); i++) {
+            int min = Integer.MAX_VALUE;
+            int minNode = 0;
+            int h = path.get(i);
+            for(int j = 0; j < graph.size(); j++) {
+                if(unvisitedNodes.contains(j) && graph.get(h, j) < min) {
+                    min = graph.get(h, j);
+                    minNode = j;
+                }
+            }
+
+            if(min < minDistance) {
+                minDistance = min;
+                k = minNode;
+            }
+        }
+        return k;
+    }
+/*
+    int selection() {
         return unvisitedNodes.stream().min(Comparator.comparingInt(this::distanceFromPath)).orElseThrow();
     }
 
+    int distanceFromPath(int node) {
+        int n = path.stream().min(Comparator.comparingInt(h -> graph.get(h, node))).orElseThrow();
+        System.out.println("N: " + n);
+        return n;
+    }
+*/
     void insertion(int nodeToInsert) {
         int minWeight = Integer.MAX_VALUE;
         int positionOfMinimum = 0;
@@ -59,9 +88,7 @@ public class ClosestInsertion {
         path.add(positionOfMinimum, nodeToInsert);
     }
 
-    int distanceFromPath(int node) {
-        return path.stream().min(Comparator.comparingInt(h -> graph.get(h, node))).orElseThrow();
-    }
+
 
     int getInsertionWeight(int nodeToInsert, int source, int destination) {
         return graph.get(source, nodeToInsert) + graph.get(nodeToInsert, destination) - graph.get(source, destination);
@@ -70,6 +97,7 @@ public class ClosestInsertion {
     int lengthOfPath() {
         int distance = 0;
         ListIterator<Integer> pathIterator = path.listIterator();
+
         int source = pathIterator.next();
 
         while (pathIterator.hasNext()) {
