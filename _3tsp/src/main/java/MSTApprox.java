@@ -39,7 +39,7 @@ public class MSTApprox {
 
 
 
-    int primMST() {
+    int primMSTWithHeap() {
         Integer[] key = new Integer[size];
         Integer[] pi = new Integer[size];
         Boolean[] mstSet = new Boolean[this.size];
@@ -70,11 +70,9 @@ public class MSTApprox {
 
         return treeBuilder(pi, graph);
     }
-}
 
-/*
     int primMST() {
-        int parent[] = new int[this.size];
+        Integer parent[] = new Integer[this.size];
         int key[] = new int [this.size];
         Boolean mstSet[] = new Boolean[this.size];
 
@@ -112,5 +110,4 @@ public class MSTApprox {
 
         return min_index;
     }
-
- */
+}
