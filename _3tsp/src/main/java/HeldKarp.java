@@ -29,7 +29,7 @@ public class HeldKarp {
         Future<Integer> future = executor.submit(() -> visit(0, wholeSet, 0));
 
         try {
-            return future.get(10, TimeUnit.SECONDS);
+            return future.get(2, TimeUnit.MINUTES);
         } catch (TimeoutException e) {
             System.out.println("Timeout");
         } catch (Exception e) {
