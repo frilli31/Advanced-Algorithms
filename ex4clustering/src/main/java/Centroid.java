@@ -10,7 +10,7 @@ public class Centroid {
     Centroid(double x, double y) {
         this.x = x;
         this.y = y;
-        item_count = 1;
+        item_count = 0;
     }
 
     Centroid(double sum_of_x, double sum_of_y, int number_of_elements) {
@@ -28,13 +28,17 @@ public class Centroid {
         item_count = 1;
     }
 
-    static public Centroid union(Centroid first, Centroid second) {
+    public String toString() {
+        return x + " " + y + " " + item_count;
+    }
+
+   /* static public Centroid union(Centroid first, Centroid second) {
         return new Centroid(
                 first.sum_of_x + second.sum_of_x,
                 first.sum_of_y + second.sum_of_y,
                 first.item_count + second.item_count
         );
-    }
+    }*/
 
     void update(County county) {
         sum_of_x += county.getX();

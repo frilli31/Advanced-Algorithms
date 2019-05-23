@@ -20,14 +20,14 @@ public class ClusteringKMeans {
         for (int i = 0; i < iteractions; i++) {
             Set<Cluster> my_clustering = clusterings.get(i);
 
-            counties.parallelStream().forEach(county -> {
+            counties.forEach(county -> {
                 Cluster mine = my_clustering.stream()
                         .min(Comparator.comparingDouble(x -> x.distance(county)))
                         .get();
-                mine.insert(county);
+                mine.insertAndUpdateCentroid(county);
             });
             clusterings.add(my_clustering.stream().map(Cluster::getCentroid).map(Cluster::new).collect(Collectors.toSet()));
         }
-        return clusterings.get(iteractions);
+        return clusterings.get(iteractions-1);
     }
 }
