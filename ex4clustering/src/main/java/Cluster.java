@@ -22,10 +22,10 @@ public class Cluster {
     }
 
     public String toString() {
-        return "Cluster: " + cities.toString() + ", " + centroid;
+        return "Cluster: " + cities.size();
     }
 
-    /*static Cluster union(Cluster first, Cluster second) {
+    static Cluster union(Cluster first, Cluster second) {
         HashSet<County> mine = new HashSet<>();
         mine.addAll(first.cities);
         mine.addAll(second.cities);
@@ -34,7 +34,7 @@ public class Cluster {
                 mine,
                 Centroid.union(first.centroid, second.centroid)
         );
-    }*/
+    }
 
     void insert(County county) {
         cities.add(county);
@@ -46,7 +46,12 @@ public class Cluster {
     }
 
     Centroid getCentroid() {
-        return new Centroid(centroid.getX(), centroid.getY());
+        int size = cities.size();
+
+        double new_x = cities.stream().mapToDouble(County::getX).sum();
+        double new_y = cities.stream().mapToDouble(County::getY).sum();
+
+        return new Centroid(new_x/size, new_y/size);
     }
 
     double getX() {

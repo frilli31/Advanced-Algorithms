@@ -32,13 +32,13 @@ public class Centroid {
         return x + " " + y + " " + item_count;
     }
 
-   /* static public Centroid union(Centroid first, Centroid second) {
+    static Centroid union(Centroid first, Centroid second) {
         return new Centroid(
                 first.sum_of_x + second.sum_of_x,
                 first.sum_of_y + second.sum_of_y,
                 first.item_count + second.item_count
         );
-    }*/
+    }
 
     void update(County county) {
         sum_of_x += county.getX();

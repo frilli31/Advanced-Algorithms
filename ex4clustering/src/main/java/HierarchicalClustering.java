@@ -30,7 +30,7 @@ public class HierarchicalClustering {
                 assert clusters_by_y.get(i).getY() < clusters_by_y.get(i+1).getY();
             }
 
-            Result closest_clusters = fastClosestPair(clusters_by_x, clusters_by_y);
+            Result closest_clusters = slowClosestPair(clusters_by_y);
 
             Cluster first = clusters_by_y.get(closest_clusters.index_of_first);
             Cluster second = clusters_by_y.get(closest_clusters.index_of_second);

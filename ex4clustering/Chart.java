@@ -14,25 +14,11 @@ import java.awt.geom.Ellipse2D;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
 public class Chart {
-    static XYSeriesCollection dataset;
-    static Map<Integer, Station> stations;
 
-    static { populateStations(); }
-
-    public static void populateStations() {
-        stations = ParseStation.parse();
-
-        XYSeries stations_series = new XYSeries("Stations");
-        stations.forEach( (code, station) -> stations_series.add(station.x, station.y));
-        dataset = new XYSeriesCollection();
-        dataset.addSeries(stations_series);
-    }
-
-    public Chart(List<Integer> route) {
+    public Chart(Set<Cluster> route) {
         String name = route.get(0)+"_"+route.get(route.size()-1);
         ArrayList<XYSeries> series = new ArrayList<>();
         for(int i=0; i<route.size()-1; i++) {

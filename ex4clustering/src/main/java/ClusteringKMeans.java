@@ -24,7 +24,7 @@ public class ClusteringKMeans {
                 Cluster mine = my_clustering.stream()
                         .min(Comparator.comparingDouble(x -> x.distance(county)))
                         .get();
-                mine.insertAndUpdateCentroid(county);
+                mine.insert(county);
             });
             clusterings.add(my_clustering.stream().map(Cluster::getCentroid).map(Cluster::new).collect(Collectors.toSet()));
         }
