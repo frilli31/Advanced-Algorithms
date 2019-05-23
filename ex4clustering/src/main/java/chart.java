@@ -40,7 +40,7 @@ class BubbleChart01 implements ExampleChart<BubbleChart> {
             for (County county : cluster.cities) {
                 xData.add(county.getX());
                 yData.add(county.getY());
-                population.add((double) county.getPopulation() / 100000);
+                population.add(Math.sqrt(county.getPopulation() / 5000));
             }
 
             chart.addSeries("" + i, xData.stream().mapToDouble(z -> z).toArray(), yData.stream().mapToDouble(z -> z).toArray(), population.stream().mapToDouble(z -> z).toArray());
