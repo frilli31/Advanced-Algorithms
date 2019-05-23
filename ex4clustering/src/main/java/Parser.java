@@ -22,19 +22,20 @@ public class Parser {
     }
 
     static Set<County> parseCities(String fileContent) {
-        Pattern patternOfDimension = Pattern.compile(" *(\\d+)+,+([^,]+)+,+([^,]+),(\\d+)+,+(\\S+)");
-        Matcher matcherOfDimension = patternOfDimension.matcher(fileContent);
+        String replaced = fileContent.replace(" ", "");
+        Pattern patternOfDimension = Pattern.compile("(\\d+),([^,]+),([^,]+),(\\d+),(\\S*)");
+        Matcher matcherOfDimension = patternOfDimension.matcher(replaced);
         Set<County> cities = new HashSet<>();
 
-        matcherOfDimension.results().forEach(x ->
+        matcherOfDimension.results().forEach(x -> {
                 cities.add(new County(
                                 Integer.parseInt(x.group(1)),
                                 Double.parseDouble(x.group(2)),
                                 Double.parseDouble(x.group(3)),
                                 Integer.parseInt(x.group(4)),
                                 Double.parseDouble(x.group(5))
-                        )
-                ));
+                        ));
+        });
         return cities;
     }
 }

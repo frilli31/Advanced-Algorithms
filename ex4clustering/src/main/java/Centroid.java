@@ -10,6 +10,7 @@ public class Centroid {
     Centroid(double x, double y) {
         this.x = x;
         this.y = y;
+        item_count = 1;
     }
 
     Centroid(double sum_of_x, double sum_of_y, int number_of_elements) {
@@ -24,7 +25,7 @@ public class Centroid {
     Centroid(County county) {
         x = sum_of_x = county.getX();
         y = sum_of_y = county.getY();
-        item_count = 0;
+        item_count = 1;
     }
 
     static public Centroid union(Centroid first, Centroid second) {

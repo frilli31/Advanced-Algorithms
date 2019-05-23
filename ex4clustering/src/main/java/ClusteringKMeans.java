@@ -6,8 +6,6 @@ import java.util.stream.Collectors;
 
 public class ClusteringKMeans {
     static Set<Cluster> run(Set<County> counties, int number_of_centers, int iteractions) {
-        int number_of_cities = counties.size();
-
         List<Set<Cluster>> clusterings = new ArrayList<>();
 
         Set<Cluster> initial_clusters = counties.stream()
@@ -24,7 +22,7 @@ public class ClusteringKMeans {
 
             counties.parallelStream().forEach(county -> {
                 Cluster mine = my_clustering.stream()
-                        .min((x, y) -> Double.compare(x.distance(county), y.distance(county)))
+                        .min(Comparator.comparingDouble(x -> x.distance(county)))
                         .get();
                 mine.insert(county);
             });

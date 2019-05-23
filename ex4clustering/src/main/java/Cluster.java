@@ -11,6 +11,10 @@ public class Cluster {
         centroid = new Centroid(county);
     }
 
+    public String toString() {
+        return "Cluster: " + cities.toString();
+    }
+
     public Cluster(Centroid centroid) {
         cities = new HashSet<>();
         this.centroid = centroid;
@@ -22,10 +26,12 @@ public class Cluster {
     }
 
     static Cluster union(Cluster first, Cluster second) {
-        first.cities.addAll(second.cities);
+        HashSet<County> mine = new HashSet<>();
+        mine.addAll(first.cities);
+        mine.addAll(second.cities);
 
         return new Cluster(
-                first.cities,
+                mine,
                 Centroid.union(first.centroid, second.centroid)
         );
     }
