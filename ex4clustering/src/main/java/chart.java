@@ -27,6 +27,7 @@ class BubbleChart01 implements ExampleChart<BubbleChart> {
 
         // Create Chart
         BubbleChart chart = new BubbleChartBuilder().width(1200).height(900).title("BubbleChart01").xAxisTitle("X").yAxisTitle("Y").build();
+        chart.getStyler().setAxisTicksVisible(false);
 
         List<Cluster> clusters2 = new ArrayList<>(clusters);
 
@@ -39,7 +40,7 @@ class BubbleChart01 implements ExampleChart<BubbleChart> {
 
             for (County county : cluster.cities) {
                 xData.add(county.getX());
-                yData.add(county.getY());
+                yData.add(600-county.getY());
                 population.add(Math.sqrt(county.getPopulation() / 5000));
             }
 
