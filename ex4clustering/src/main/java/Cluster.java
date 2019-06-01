@@ -22,16 +22,16 @@ public class Cluster {
     }
 
     public String toString() {
-        return "Cluster: " + cities.size();
+        return (int) centroid.getX() + ";" + (int) centroid.getY();
     }
 
     static Cluster union(Cluster first, Cluster second) {
-        HashSet<County> mine = new HashSet<>();
-        mine.addAll(first.cities);
-        mine.addAll(second.cities);
+        HashSet<County> cities = new HashSet<>();
+        cities.addAll(first.cities);
+        cities.addAll(second.cities);
 
         return new Cluster(
-                mine,
+                cities,
                 Centroid.union(first.centroid, second.centroid)
         );
     }

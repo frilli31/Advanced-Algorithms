@@ -7,21 +7,18 @@ import java.util.stream.Stream;
 public class HierarchicalClustering {
 
     static Set<Cluster> run(Set<County> counties, int number_of_clusters) {
-        ArrayList<Cluster> clusters_by_x = (ArrayList<Cluster>) counties.stream()
-                .map(Cluster::new)
-                .sorted(Comparator.comparingDouble(Cluster::getX))
-                .collect(Collectors.toList());
+        ArrayList<Cluster> clusters_by_x = (ArrayList<Cluster>) counties.stream().map(Cluster::new)
+                .sorted(Comparator.comparingDouble(Cluster::getX)).collect(Collectors.toList());
 
         ArrayList<Cluster> clusters_by_y = (ArrayList<Cluster>) clusters_by_x.stream()
-                .sorted(Comparator.comparingDouble(Cluster::getY))
-                .collect(Collectors.toList());
+                .sorted(Comparator.comparingDouble(Cluster::getY)).collect(Collectors.toList());
 
         while (clusters_by_x.size() > number_of_clusters) {
             Result closest_clusters = fastClosestPair(clusters_by_x, clusters_by_y);
 
             Cluster first = closest_clusters.first;
             Cluster second = closest_clusters.second;
-            Set<Cluster> cl_to_remove = Stream.of(first, second).collect(Collectors.toSet());
+            Set<Cluster> cl_to_remove = Set.of(first, second);
 
             clusters_by_x.removeAll(cl_to_remove);
             clusters_by_y.removeAll(cl_to_remove);
@@ -32,10 +29,10 @@ public class HierarchicalClustering {
             int index_of_y = 0;
 
             int size = clusters_by_x.size();
-            for(int i=0; i < size; i++) {
-                if(union.getX() > clusters_by_x.get(i).getX())
+            for (int i = 0; i < size; i++) {
+                if (union.getX() > clusters_by_x.get(i).getX())
                     index_of_x++;
-                if(union.getY() > clusters_by_y.get(i).getY())
+                if (union.getY() > clusters_by_y.get(i).getY())
                     index_of_y++;
             }
             clusters_by_x.add(index_of_x, union);
@@ -57,12 +54,6 @@ public class HierarchicalClustering {
     }
 
     static Result fastClosestPair(List<Cluster> clusters_by_x, List<Cluster> clusters_by_y) {
-        // ciclo per controllare che effettivamente i valori siano nel corretto ordine (da eliminare in futuro)
-        for(int i=0; i<clusters_by_x.size()-1; i++) {
-            assert clusters_by_x.get(i).getX() < clusters_by_x.get(i+1).getX();
-            assert clusters_by_y.get(i).getY() < clusters_by_y.get(i+1).getY();
-        }
-
         int size = clusters_by_x.size();
 
         if (size <= 3)
@@ -74,37 +65,30 @@ public class HierarchicalClustering {
 
             Pair<List<Cluster>, List<Cluster>> arrays_splitted = split(clusters_by_y, first_half, second_half);
 
-            Result r1 = fastClosestPair(first_half, arrays_splitted.getLeft());
-            Result r2 = fastClosestPair(second_half, arrays_splitted.getRight());
+            Result closestLeft = fastClosestPair(first_half, arrays_splitted.getLeft());
+            Result closestRight = fastClosestPair(second_half, arrays_splitted.getRight());
 
-            Result r;
-            if(r1.distance < r2.distance)
-                r = r1;
-            else
-                r = r2;
+            Result closestLR = closestLeft.distance < closestRight.distance ? closestLeft : closestRight;
 
-            double mid = ((clusters_by_x.get(half_index).centroid.getX()) + clusters_by_x.get(half_index+1).centroid.getX()) / 2;
+            double mid = ((clusters_by_x.get(half_index).centroid.getX())
+                    + clusters_by_x.get(half_index + 1).centroid.getX()) / 2;
 
-            Result ris = closestPairStrip(clusters_by_y, mid, r.distance);
+            Result closestMid = closestPairStrip(clusters_by_y, mid, closestLR.distance);
 
-            if(ris.distance <= r.distance)
-                return ris;
-            else
-                return r;
+            return closestMid.distance <= closestLR.distance ? closestMid : closestLR;
         }
     }
 
-    static Pair<List<Cluster>, List<Cluster>> split(List<Cluster> cluster_by_y, List<Cluster> first_half, List<Cluster> second_half) {
+    static Pair<List<Cluster>, List<Cluster>> split(List<Cluster> cluster_by_y, List<Cluster> first_half,
+            List<Cluster> second_half) {
         int size = cluster_by_y.size();
 
         ArrayList<Cluster> first = new ArrayList<>(size / 2 + 1);
         ArrayList<Cluster> second = new ArrayList<>(size / 2 + 1);
 
         cluster_by_y.forEach(cluster -> {
-            if (first_half.contains(cluster))
-                first.add(cluster);
-            else
-                second.add(cluster);
+            if (first_half.contains(cluster)) first.add(cluster);
+            else second.add(cluster);
         });
         return Pair.of(first, second);
     }
@@ -113,23 +97,23 @@ public class HierarchicalClustering {
         int n = clusters_by_y.size();
         List<Cluster> s1 = new ArrayList<>();
         List<Integer> indexes = new ArrayList<>();
-        for(int i = 0; i < n; i++) {
-            if(Math.abs(clusters_by_y.get(i).getX() - mid) < distance) {
+        for (int i = 0; i < n; i++) {
+            if (Math.abs(clusters_by_y.get(i).getX() - mid) < distance) {
                 s1.add(clusters_by_y.get(i));
                 indexes.add(i);
             }
         }
 
-        Result r =  new Result(Double.MAX_VALUE, null, null);
+        Result r = new Result(Double.MAX_VALUE, null, null);
 
-        for(int u = 0; u < s1.size() - 1; u++) {
+        for (int u = 0; u < s1.size() - 1; u++) {
             Cluster c1 = s1.get(u);
             int min;
-            if ( u + 5 < s1.size() - 1)
+            if (u + 5 < s1.size() - 1)
                 min = u + 5;
             else
                 min = s1.size() - 1;
-            for( int v = u +1; v <= min; v++) {
+            for (int v = u + 1; v <= min; v++) {
                 Cluster c2 = s1.get(v);
                 double d = c1.distance(c2);
                 if (d < r.distance) {
@@ -144,16 +128,17 @@ public class HierarchicalClustering {
         Result result = new Result(Double.POSITIVE_INFINITY, null, null);
         int size = clusters.size();
 
-        for (int i = 0; i < size-1; i++) {
+        for (int i = 0; i < size - 1; i++) {
             Cluster first = clusters.get(i);
-            for (int j = i+1; j < size; j++) {
-                    Cluster second = clusters.get(j);
-                    double distance = first.distance(second);
-                    if (distance < result.distance) {
-                        result = new Result(distance, first, second);
-                    }
+            for (int j = i + 1; j < size; j++) {
+                Cluster second = clusters.get(j);
+                double distance = first.distance(second);
+                if (distance < result.distance) {
+                    result = new Result(distance, first, second);
+                }
             }
         }
+
         return result;
     }
 }
