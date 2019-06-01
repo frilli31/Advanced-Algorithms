@@ -69,4 +69,8 @@ public class Cluster {
     double distance(Cluster cluster) {
         return centroid.distance(cluster.centroid);
     }
+
+    double getError() {
+        return cities.stream().mapToDouble(county -> county.getPopulation() * Math.pow(centroid.distance(county), 2)).sum();
+    }
 }

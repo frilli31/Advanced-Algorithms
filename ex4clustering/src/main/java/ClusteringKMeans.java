@@ -9,7 +9,7 @@ public class ClusteringKMeans {
         List<Set<Cluster>> clusterings = new ArrayList<>();
 
         Set<Cluster> initial_clusters = counties.stream()
-                .sorted(Comparator.comparingInt(County::getPopulation))
+                .sorted(Comparator.comparingInt(County::getPopulation).reversed())
                 .limit(number_of_centers)
                 .map(Centroid::new)
                 .map(Cluster::new)
@@ -21,13 +21,15 @@ public class ClusteringKMeans {
             Set<Cluster> my_clustering = clusterings.get(i);
 
             counties.forEach(county -> {
-                Cluster mine = my_clustering.stream()
+                Cluster nearestCluster = my_clustering.stream()
                         .min(Comparator.comparingDouble(x -> x.distance(county)))
                         .get();
-                mine.insert(county);
+                nearestCluster.insert(county);
             });
+
             clusterings.add(my_clustering.stream().map(Cluster::getCentroid).map(Cluster::new).collect(Collectors.toSet()));
         }
+        
         return clusterings.get(iteractions-1);
     }
 }
