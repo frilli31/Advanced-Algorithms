@@ -57,6 +57,10 @@
     '#f5c8af',
     '#9ac483',
     '#9e9ea2',
+    'red',
+    'red',
+    'red',
+    'red',
   ];
   const formatAsThousands = d3.format(',.2r');
 
@@ -97,7 +101,8 @@
     .append('path')
     .attr('transform', d => `translate(${xScale(d[0])}, ${yScale(d[1])})`)
     .attr('d', d3.symbol().type(d3.symbolTriangle))
-    .attr('fill', (d, i) => designedColors[i]);
+    .attr('fill', (d, i) => designedColors[i])
+    .attr('stroke', '#fff');
 
   // Legend
   svg
