@@ -1,23 +1,23 @@
 import java.util.HashSet;
 
 public class Cluster {
-    HashSet<County> cities;
+    HashSet<County> counties;
     Centroid centroid;
 
 
     public Cluster(County county) {
-        cities = new HashSet<County>();
-        cities.add(county);
+        counties = new HashSet<County>();
+        counties.add(county);
         centroid = new Centroid(county);
     }
 
     public Cluster(Centroid centroid) {
-        cities = new HashSet<>();
+        counties = new HashSet<>();
         this.centroid = new Centroid(centroid.getX(), centroid.getY());
     }
 
-    private Cluster(HashSet<County> cities, Centroid centroid) {
-        this.cities = cities;
+    private Cluster(HashSet<County> counties, Centroid centroid) {
+        this.counties = counties;
         this.centroid = centroid;
     }
 
@@ -26,30 +26,30 @@ public class Cluster {
     }
 
     static Cluster union(Cluster first, Cluster second) {
-        HashSet<County> cities = new HashSet<>();
-        cities.addAll(first.cities);
-        cities.addAll(second.cities);
+        HashSet<County> counties = new HashSet<>();
+        counties.addAll(first.counties);
+        counties.addAll(second.counties);
 
         return new Cluster(
-                cities,
+                counties,
                 Centroid.union(first.centroid, second.centroid)
         );
     }
 
     void insert(County county) {
-        cities.add(county);
+        counties.add(county);
     }
 
     void insertAndUpdateCentroid(County county) {
-        cities.add(county);
+        counties.add(county);
         centroid.update(county);
     }
 
     Centroid getCentroid() {
-        int size = cities.size();
+        int size = counties.size();
 
-        double new_x = cities.stream().mapToDouble(County::getX).sum();
-        double new_y = cities.stream().mapToDouble(County::getY).sum();
+        double new_x = counties.stream().mapToDouble(County::getX).sum();
+        double new_y = counties.stream().mapToDouble(County::getY).sum();
 
         return new Centroid(new_x/size, new_y/size);
     }
@@ -71,6 +71,6 @@ public class Cluster {
     }
 
     double getError() {
-        return cities.stream().mapToDouble(county -> county.getPopulation() * Math.pow(centroid.distance(county), 2)).sum();
+        return counties.stream().mapToDouble(county -> county.getPopulation() * Math.pow(centroid.distance(county), 2)).sum();
     }
 }

@@ -16,21 +16,21 @@ import java.util.stream.IntStream;
 
 public class Main {
     public static void main(String[] args) {
-        // Set<County> cities_212 = Parser.get("unifiedCancerData_212");
-        // Set<County> cities_562 = Parser.get("unifiedCancerData_562");
-        Set<County> cities_1041 = Parser.get("unifiedCancerData_1041");
-        // Set<County> cities_3108 = Parser.get("unifiedCancerData_3108");
+        // Set<County> counties_212 = Parser.get("unifiedCancerData_212");
+        // Set<County> counties_562 = Parser.get("unifiedCancerData_562");
+        Set<County> counties_1041 = Parser.get("unifiedCancerData_1041");
+        // Set<County> counties_3108 = Parser.get("unifiedCancerData_3108");
 
         List<String[]> distortionCSV = IntStream.range(6, 21).mapToObj(numberOfClusters -> {
-            Set<Cluster> hierarchicalClusters = HierarchicalClustering.run(cities_1041, numberOfClusters);
-            Set<Cluster> kmeansClusters = ClusteringKMeans.run(cities_1041, numberOfClusters, 5);
+            Set<Cluster> hierarchicalClusters = HierarchicalClustering.run(counties_1041, numberOfClusters);
+            Set<Cluster> kmeansClusters = ClusteringKMeans.run(counties_1041, numberOfClusters, 5);
 
             return new String[] {String.valueOf(numberOfClusters), String.valueOf(getDistortion(hierarchicalClusters)), String.valueOf(getDistortion(kmeansClusters))};
         }).collect(Collectors.toList());
         saveAsCSV(distortionCSV, "Clusters,Hierarchical,K-means", "distortion.csv");
 
-        // Set<Cluster> hierarchicalClusters = HierarchicalClustering.run(cities_212, 15);
-        // Set<Cluster> kmeansClusters = ClusteringKMeans.run(cities_212, 15, 5);
+        // Set<Cluster> hierarchicalClusters = HierarchicalClustering.run(counties_212, 15);
+        // Set<Cluster> kmeansClusters = ClusteringKMeans.run(counties_212, 15, 5);
         // saveAsCSV(convertoToCSV(hierarchicalClusters), "x,y,population,cluster,centroid", "bubble-maps/hierarchical.csv");
         // saveAsCSV(convertoToCSV(kmeansClusters), "x,y,population,cluster,centroid", "bubble-maps/kmeans.csv");
 
@@ -63,7 +63,7 @@ public class Main {
         int i = 0;
         
         for (Cluster cluster : clusters) {
-            for (County county : cluster.cities) {
+            for (County county : cluster.counties) {
                 String x = String.valueOf((int) county.getX());
                 String y = String.valueOf((int) county.getY());
                 String population = String.valueOf((int) county.getPopulation());

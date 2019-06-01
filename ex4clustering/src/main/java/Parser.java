@@ -10,7 +10,7 @@ public class Parser {
 
     static public Set<County> get(String fileName) {
         String fileContent = readFile("input/" + fileName + ".csv");
-        return parseCities(fileContent);
+        return parseCounties(fileContent);
     }
 
     static String readFile(String fileName) {
@@ -21,14 +21,14 @@ public class Parser {
         }
     }
 
-    static Set<County> parseCities(String fileContent) {
+    static Set<County> parseCounties(String fileContent) {
         String replaced = fileContent.replace(" ", "");
         Pattern patternOfDimension = Pattern.compile("(\\d+),([^,]+),([^,]+),(\\d+),(\\S*)");
         Matcher matcherOfDimension = patternOfDimension.matcher(replaced);
-        Set<County> cities = new HashSet<>();
+        Set<County> counties = new HashSet<>();
 
         matcherOfDimension.results().forEach(x -> {
-                cities.add(new County(
+                counties.add(new County(
                                 Integer.parseInt(x.group(1)),
                                 Double.parseDouble(x.group(2)),
                                 Double.parseDouble(x.group(3)),
@@ -36,7 +36,7 @@ public class Parser {
                                 Double.parseDouble(x.group(5))
                         ));
         });
-        return cities;
+        return counties;
     }
 }
 

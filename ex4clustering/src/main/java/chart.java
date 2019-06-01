@@ -38,7 +38,7 @@ class BubbleChart01 implements ExampleChart<BubbleChart> {
 
             Cluster cluster = clusters2.get(i);
 
-            for (County county : cluster.cities) {
+            for (County county : cluster.counties) {
                 xData.add(county.getX());
                 yData.add(600-county.getY());
                 population.add(Math.sqrt(county.getPopulation() / 5000));
