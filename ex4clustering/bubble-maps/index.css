@@ -1,4 +1,5 @@
 body {
+  color: #888;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif,
     'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
 }
@@ -11,6 +12,7 @@ body {
 .bubble-maps::after {
   content: '';
   background: url('USA_Counties.png');
+  background-repeat: no-repeat;
   opacity: 0.2;
   top: 0;
   left: 0;
