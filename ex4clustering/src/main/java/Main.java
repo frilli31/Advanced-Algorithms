@@ -1,9 +1,3 @@
-import org.knowm.xchart.BitmapEncoder;
-import org.knowm.xchart.BubbleChart;
-import org.knowm.xchart.SwingWrapper;
-import org.knowm.xchart.demo.charts.ExampleChart;
-import java.io.IOException;
-
 import java.io.File;
 import java.io.PrintWriter;
 import java.math.BigDecimal;
@@ -33,28 +27,15 @@ public class Main {
         Set<Cluster> kmeansClusters = ClusteringKMeans.run(counties_562, 15, 5);
         saveAsCSV(convertoToCSV(hierarchicalClusters), "x,y,population,cluster,centroid", "bubble-maps/hierarchical.csv");
         saveAsCSV(convertoToCSV(kmeansClusters), "x,y,population,cluster,centroid", "bubble-maps/kmeans.csv");
-
-        // ExampleChart<BubbleChart> bubbleChart1 = new BubbleChart01(hierarchicalClusters);
-        // ExampleChart<BubbleChart> bubbleChart2 = new BubbleChart01(kmeansClusters);
-        // BubbleChart chart1 = bubbleChart1.getChart();
-        // BubbleChart chart2 = bubbleChart2.getChart();
-        // try {
-        //     BitmapEncoder.saveBitmapWithDPI(chart1, "./hierarchical", BitmapEncoder.BitmapFormat.JPG, 300);
-        //     BitmapEncoder.saveBitmapWithDPI(chart2, "./kmeans", BitmapEncoder.BitmapFormat.JPG, 300);
-        // } catch (IOException e) {
-        //     e.printStackTrace();
-        // }
     }
 
     static double getDistortion(Set<Cluster> clusters) {
-        double distortion = clusters.stream().mapToDouble(cluster -> cluster.getError()).sum();
+        double distortion = clusters.stream().mapToDouble(Cluster::getError).sum();
 
         // Rounded to 4 significant digits
         BigDecimal bd = new BigDecimal(distortion);
         bd = bd.round(new MathContext(4));
-        double rounded = bd.doubleValue();
-
-        return rounded;
+        return bd.doubleValue();
     }
 
     static List<String[]> convertoToCSV(Set<Cluster> clusters) {
@@ -66,7 +47,7 @@ public class Main {
             for (County county : cluster.counties) {
                 String x = String.valueOf((int) county.getX());
                 String y = String.valueOf((int) county.getY());
-                String population = String.valueOf((int) county.getPopulation());
+                String population = String.valueOf(county.getPopulation());
                 String centroid = (int) cluster.centroid.getX() + ";" + (int) cluster.centroid.getY();
 
                 dataLines.add(new String[] { x, y, population, String.valueOf(i), centroid });
