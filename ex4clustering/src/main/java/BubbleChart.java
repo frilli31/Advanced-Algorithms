@@ -6,13 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-/**
- * Basic Bubble Chart
- * <p>
- * Demonstrates the following:
- * <ul>
- * <li>Bubble Chart
- */
 class BubbleChart01 implements ExampleChart<BubbleChart> {
 
     Set<Cluster> clusters;

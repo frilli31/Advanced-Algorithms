@@ -29,7 +29,7 @@ public class ClusteringKMeans {
 
             clusterings.add(my_clustering.stream().map(Cluster::getCentroid).map(Cluster::new).collect(Collectors.toSet()));
         }
-        
+        clusterings.get(iteractions - 1).forEach(cluster -> cluster.centroid = cluster.getCentroid());
         return clusterings.get(iteractions-1);
     }
 }
