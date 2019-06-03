@@ -1,3 +1,5 @@
+import java.io.File;
+import java.io.PrintWriter;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.ArrayList;
@@ -6,19 +8,37 @@ import java.util.Set;
 
 public class Main {
     public static void main(String[] args) {
-        List<City> cities = new ArrayList<>(Parser.get("cities-and-towns-of-usa"));
-        System.out.println(cities.size());
+        List<City> cities_original = new ArrayList<>(Parser.get("cities-and-towns-of-usa"));
+        /*List<City> cities_250 = cities_original.stream()
+                .filter(c -> c.getPopulation()>250)
+                .collect(Collectors.toList());
+        List<City> cities_2k = cities_250.stream()
+                .filter(c -> c.getPopulation()>2_000)
+                .collect(Collectors.toList());
+        List<City> cities_5k = cities_2k.stream()
+                .filter(c -> c.getPopulation()>5_000)
+                .collect(Collectors.toList());
+        List<City> cities_15k = cities_5k.stream()
+                .filter(c -> c.getPopulation()>15_000)
+                .collect(Collectors.toList());
+        List<City> cities_50k = cities_15k.stream()
+                .filter(c -> c.getPopulation()>50_000)
+                .collect(Collectors.toList());
+        List<City> cities_100k = cities_50k.stream()
+                .filter(c -> c.getPopulation()>100_000)
+                .collect(Collectors.toList());*/
 
-        ParallelKMeans.run(cities, 50, 100);
+        long fstTime = System.currentTimeMillis();
+        Set<Cluster> kmeansClusters = ParallelKMeans.run(cities_original, 50, 10, 100000);
+        System.out.println("Execution: " + (System.currentTimeMillis() - fstTime));
 
-
-        //saveAsCSV(distortionCSV, "Clusters,Hierarchical,K-means", "distortion.csv");
+        kmeansClusters.stream().map(Cluster::toString).forEach(System.out::println);
 
         //Set<Cluster> kmeansClusters = SerialKMeans.run(counties_562, 15, 5);
-        //saveAsCSV(convertoToCSV(kmeansClusters), "latitude,longitude,population,cluster,centroid", "bubble-maps/kmeans.csv");
+        saveAsCSV(convertoToCSV(kmeansClusters), "latitude,longitude,population,cluster,centroid", "bubble-maps/kmeans.csv");
     }
 
-    static double getDistortion(Set<Cluster> clusters) {
+    static double getDistortion(List<Cluster> clusters) {
         double distortion = clusters.stream().mapToDouble(Cluster::getError).sum();
 
         // Rounded to 4 significant digits
@@ -27,15 +47,15 @@ public class Main {
         return bd.doubleValue();
     }
 
-   /* static List<String[]> convertoToCSV(Set<Cluster> clusters) {
+    static List<String[]> convertoToCSV(Set<Cluster> clusters) {
         List<String[]> dataLines = new ArrayList<>();
 
         int i = 0;
 
         for (Cluster cluster : clusters) {
             for (City county : cluster.cities) {
-                String latitude = String.valueOf((int) county.getX());
-                String longitude = String.valueOf((int) county.getY());
+                String latitude = String.valueOf((int) county.getLat());
+                String longitude = String.valueOf((int) county.getLon());
                 String population = String.valueOf(county.getPopulation());
                 String centroid = (int) cluster.centroid.getLatitude() + ";" + (int) cluster.centroid.getLongitude();
 
@@ -59,5 +79,5 @@ public class Main {
         } catch (Exception e) {
             System.out.println(e);
         }
-    }*/
+    }
 }

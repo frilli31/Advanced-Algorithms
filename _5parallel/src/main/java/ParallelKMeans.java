@@ -1,9 +1,10 @@
 import java.util.*;
+import java.util.concurrent.RecursiveTask;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class ParallelKMeans {
-    static Set<Cluster> run(List<City> counties, int number_of_centers, int iteractions) {
+    static Set<Cluster> run(List<City> counties, int number_of_centers, int iteractions, int cutoff) {
         int size = counties.size();
         List<Centroid> initial_clusters = counties.stream()
                 .parallel()
@@ -12,11 +13,12 @@ public class ParallelKMeans {
                 .map(Centroid::new)
                 .collect(Collectors.toList());
 
-        ArrayList<Integer> cluster_of_city = new ArrayList<>(Collections.nCopies(size, 0));
+        ArrayList<Integer> cluster_of_city = (ArrayList<Integer>) IntStream.generate(() -> 0).limit(size).boxed()
+                .collect(Collectors.toList());
 
         for (int i = 0; i < iteractions; i++) {
 
-            IntStream.range(0, counties.size())
+            IntStream.range(0, size)
                     .parallel()
                     .forEach(index -> {
                         int nearestCluster = IntStream.range(0, number_of_centers)
@@ -29,7 +31,7 @@ public class ParallelKMeans {
             IntStream.range(0, number_of_centers)
                     .parallel()
                     .forEach(index_of_center -> {
-                        Result r = parallelReduceCluster(cluster_of_city, counties, index_of_center);
+                        Result r = new ClusterReduce(cluster_of_city, counties, index_of_center, cutoff).invoke();
                         double mid_latitude = r.latitude / r.size;
                         double mid_longitude = r.longitude / r.size;
                         initial_clusters.set(index_of_center, new Centroid(mid_latitude, mid_longitude));
@@ -48,27 +50,41 @@ public class ParallelKMeans {
         return clusterings;
     }
 
-    static Result parallelReduceCluster(List<Integer> cluster_of_counties, List<City> cities, int h) {
-        int size = cluster_of_counties.size();
-        if (size == 1)
-            if (cluster_of_counties.get(0) == h)
-                return new Result(cities.get(0));
-            else
-                return new Result();
-        else {
-            int mid = Math.floorDiv(size, 2);
-            Result r1 = parallelReduceCluster(cluster_of_counties.subList(0, mid), cities.subList(0, mid), h);
-            Result r2 = parallelReduceCluster(cluster_of_counties.subList(mid, size), cities.subList(mid, size), h);
-            return Result.sum(r1, r2);
-        }
-    }
-
     static Result sequentialReduceCluster(List<Integer> cluster_of_counties, List<City> cities, int h) {
         return IntStream.range(0, cluster_of_counties.size())
                 .boxed()
                 .filter(i -> cluster_of_counties.get(i) == h)
                 .map(idx -> new Result(cities.get(idx)))
                 .reduce(new Result(), Result::sum);
+    }
+
+    static class ClusterReduce extends RecursiveTask<Result> {
+        List<Integer> cluster_of_counties;
+        List<City> cities;
+        int h;
+        int cutoff;
+
+        ClusterReduce(List<Integer> cluster_of_counties, List<City> cities, int h, int cutoff) {
+            this.cluster_of_counties = cluster_of_counties;
+            this.cities = cities;
+            this.h = h;
+            this.cutoff = cutoff;
+        }
+
+        @Override
+        public Result compute() {
+            int size = cluster_of_counties.size();
+
+            if (size <= cutoff) {
+                return sequentialReduceCluster(cluster_of_counties, cities, h);
+            } else {
+                int mid = Math.floorDiv(size, 2);
+                ClusterReduce r1 = new ClusterReduce(cluster_of_counties.subList(0, mid), cities.subList(0, mid), h, cutoff);
+                ClusterReduce r2 = new ClusterReduce(cluster_of_counties.subList(mid, size), cities.subList(mid, size), h, cutoff);
+                r1.fork();
+                return Result.sum(r2.compute(), r1.join());
+            }
+        }
     }
 
     static class Result {

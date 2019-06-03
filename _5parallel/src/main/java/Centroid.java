@@ -28,8 +28,8 @@ public class Centroid {
      */
     public int distance(City city) {
         double lat1Rad = coordinates2Radians(latitude);
-        double lat2Rad = coordinates2Radians(longitude);
-        double lon1Rad = coordinates2Radians(city.getLon());
+        double lat2Rad = coordinates2Radians(city.getLat());
+        double lon1Rad = coordinates2Radians(longitude);
         double lon2Rad = coordinates2Radians(city.getLon());
 
         double R = 6378.388;
