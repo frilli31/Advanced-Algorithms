@@ -1,52 +1,88 @@
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class ParallelKMeans {
-    static Set<Cluster> run(Set<City> counties, int number_of_centers, int iteractions) {
-        List<Set<Cluster>> clusterings = new ArrayList<>();
-
-        Set<Cluster> initial_clusters = counties.stream()
+    static Set<Cluster> run(List<City> counties, int number_of_centers, int iteractions) {
+        int size = counties.size();
+        List<Centroid> initial_clusters = counties.stream()
                 .parallel()
                 .sorted(Comparator.comparingInt(City::getPopulation).reversed())
                 .limit(number_of_centers)
                 .map(Centroid::new)
-                .map(Cluster::new)
-                .collect(Collectors.toSet());
+                .collect(Collectors.toList());
 
-        clusterings.add(initial_clusters);
+        ArrayList<Integer> cluster_of_city = new ArrayList<>(Collections.nCopies(size, 0));
 
         for (int i = 0; i < iteractions; i++) {
-            Set<Cluster> my_clustering = clusterings.get(i);
 
-            counties.forEach(city -> {
-                Cluster nearestCluster = my_clustering.stream()
-                        .min(Comparator.comparingDouble(x -> x.distance(city)))
-                        .get();
-                nearestCluster.insert(city);
+            IntStream.range(0, counties.size())
+                    .forEach(index -> {
+                        int nearestCluster = IntStream.range(0, number_of_centers)
+                                .boxed()
+                                .min(Comparator.comparingDouble(x -> initial_clusters.get(x).distance(counties.get(index))))
+                                .orElseThrow();
+                        cluster_of_city.set(index, nearestCluster);
             });
 
-            clusterings.add(my_clustering.stream().map(Cluster::getCentroid).map(Cluster::new).collect(Collectors.toSet()));
+            IntStream.range(0, number_of_centers)
+                    .forEach(index_of_center -> {
+                        Result r = parallelReduceCluster(cluster_of_city, counties, index_of_center);
+                        double mid_latitude = r.latitude / r.size;
+                        double mid_longitude = r.longitude / r.size;
+                        initial_clusters.set(index_of_center, new Centroid(mid_latitude, mid_longitude));
+                    });
         }
-        clusterings.get(iteractions - 1).forEach(cluster -> cluster.centroid = cluster.getCentroid());
-        return clusterings.get(iteractions - 1);
+
+        Set<Cluster> clusterings = new HashSet<>();
+
+        IntStream.range(0, number_of_centers).forEach(index_of_cluster -> {
+            Set<City> cluster = IntStream.range(0, size)
+                    .filter(idx -> cluster_of_city.get(idx) == index_of_cluster)
+                    .mapToObj(counties::get)
+                    .collect(Collectors.toSet());
+            clusterings.add(new Cluster(cluster));
+        });
+        return clusterings;
     }
 
-    class Result {
-        double x;
-        double y;
-        int size;
-
-        Result() {
+    static Result parallelReduceCluster(List<Integer> cluster_of_counties, List<City> cities, int h) {
+        int size = cluster_of_counties.size();
+        if (size == 0)
+            return new Result();
+        if (size == 1)
+            if (cluster_of_counties.get(0) == h)
+                return new Result(cities.get(0));
+            else
+                return new Result();
+        else {
+            int mid = Math.floorDiv(size, 2);
+            Result r1 = parallelReduceCluster(cluster_of_counties.subList(0, mid), cities.subList(0, mid), h);
+            Result r2 = parallelReduceCluster(cluster_of_counties.subList(mid, size), cities.subList(mid, size), h);
+            return Result.sum(r1, r2);
         }
+    }
 
-        Result sum(Result r1, Result r2) {
-            r1.x += r2.x;
-            r1.y += r2.y;
-            r1.size += r2.size;
-            return r1;
-        }
+}
+
+class Result {
+    double latitude;
+    double longitude;
+    int size;
+
+    Result() {
+    }
+
+    Result(City city) {
+        this.latitude = city.getLat();
+        this.longitude = city.getLon();
+        this.size = 1;
+    }
+
+    static Result sum(Result r1, Result r2) {
+        r1.latitude += r2.latitude;
+        r1.longitude += r2.longitude;
+        r1.size += r2.size;
+        return r1;
     }
 }

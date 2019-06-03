@@ -1,7 +1,8 @@
 import java.util.HashSet;
+import java.util.Set;
 
 public class Cluster {
-    HashSet<City> cities;
+    Set<City> cities;
     Centroid centroid;
 
 
@@ -9,6 +10,11 @@ public class Cluster {
         cities = new HashSet<City>();
         cities.add(city);
         centroid = new Centroid(city);
+    }
+
+    public Cluster(Set<City> cities) {
+        this.cities = cities;
+        this.centroid = getCentroid();
     }
 
     public Cluster(Centroid centroid) {
