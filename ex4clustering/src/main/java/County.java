@@ -13,6 +13,10 @@ public class County {
         this.cancer_danger = cancer_danger;
     }
 
+    public String toString() {
+        return "X: " + x + "\t" + "Y: " + y + "\t" + "Pop: " + population;
+    }
+
     public double getX() {
         return x;
     }
