@@ -68,7 +68,7 @@ public class ParallelKMeans {
                 .boxed()
                 .filter(i -> cluster_of_counties.get(i) == h)
                 .map(idx -> new Result(cities.get(idx)))
-                .reduce(new Result, Result::sum);
+                .reduce(new Result(), Result::sum);
     }
 
     static class Result {
