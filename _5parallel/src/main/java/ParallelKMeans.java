@@ -17,6 +17,7 @@ public class ParallelKMeans {
         for (int i = 0; i < iteractions; i++) {
 
             IntStream.range(0, counties.size())
+                    .parallel()
                     .forEach(index -> {
                         int nearestCluster = IntStream.range(0, number_of_centers)
                                 .boxed()
@@ -26,6 +27,7 @@ public class ParallelKMeans {
             });
 
             IntStream.range(0, number_of_centers)
+                    .parallel()
                     .forEach(index_of_center -> {
                         Result r = parallelReduceCluster(cluster_of_city, counties, index_of_center);
                         double mid_latitude = r.latitude / r.size;
@@ -48,8 +50,6 @@ public class ParallelKMeans {
 
     static Result parallelReduceCluster(List<Integer> cluster_of_counties, List<City> cities, int h) {
         int size = cluster_of_counties.size();
-        if (size == 0)
-            return new Result();
         if (size == 1)
             if (cluster_of_counties.get(0) == h)
                 return new Result(cities.get(0));
@@ -63,26 +63,35 @@ public class ParallelKMeans {
         }
     }
 
+    static Result sequentialReduceCluster(List<Integer> cluster_of_counties, List<City> cities, int h) {
+        return IntStream.range(0, cluster_of_counties.size())
+                .boxed()
+                .filter(i -> cluster_of_counties.get(i) == h)
+                .map(idx -> new Result(cities.get(idx)))
+                .reduce(new Result, Result::sum);
+    }
+
+    static class Result {
+        double latitude;
+        double longitude;
+        int size;
+
+        Result() {
+        }
+
+        Result(City city) {
+            this.latitude = city.getLat();
+            this.longitude = city.getLon();
+            this.size = 1;
+        }
+
+        static Result sum(Result r1, Result r2) {
+            r1.latitude += r2.latitude;
+            r1.longitude += r2.longitude;
+            r1.size += r2.size;
+            return r1;
+        }
+    }
 }
 
-class Result {
-    double latitude;
-    double longitude;
-    int size;
 
-    Result() {
-    }
-
-    Result(City city) {
-        this.latitude = city.getLat();
-        this.longitude = city.getLon();
-        this.size = 1;
-    }
-
-    static Result sum(Result r1, Result r2) {
-        r1.latitude += r2.latitude;
-        r1.longitude += r2.longitude;
-        r1.size += r2.size;
-        return r1;
-    }
-}
