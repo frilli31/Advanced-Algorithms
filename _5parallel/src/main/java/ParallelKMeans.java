@@ -21,10 +21,20 @@ public class ParallelKMeans {
             IntStream.range(0, size)
                     .parallel()
                     .forEach(index -> {
-                        int nearestCluster = IntStream.range(0, number_of_centers)
-                                .boxed()
-                                .min(Comparator.comparingDouble(x -> initial_clusters.get(x).distance(counties.get(index))))
-                                .orElseThrow();
+                        int nearestCluster = 0;
+                        double min_distance = Double.MAX_VALUE;
+                        for (int i_centroid = 0; i_centroid < number_of_centers; i_centroid++) {
+                            int distance = initial_clusters.get(i_centroid).distance(counties.get(index));
+                            if (distance < min_distance) {
+                                nearestCluster = i_centroid;
+                                min_distance = distance;
+                            }
+                        }
+                        //int nearestCluster = IntStream.range(0, number_of_centers)
+                        //        .boxed()
+                        //        .min(Comparator.comparingDouble(x -> initial_clusters.get(x).distance(counties.get(index))))
+                        //        .orElseThrow();
+                        
                         cluster_of_city.set(index, nearestCluster);
             });
 
@@ -38,27 +48,37 @@ public class ParallelKMeans {
                     });
         }
 
-        Set<Cluster> clusterings = new HashSet<>();
+        Set<Cluster> clustering = new HashSet<>();
 
-        IntStream.range(0, number_of_centers).forEach(index_of_cluster -> {
+        IntStream.range(0, number_of_centers).parallel()
+                .forEach(index_of_cluster -> {
             Set<City> cluster = IntStream.range(0, size)
                     .filter(idx -> cluster_of_city.get(idx) == index_of_cluster)
                     .mapToObj(counties::get)
                     .collect(Collectors.toSet());
-            clusterings.add(new Cluster(cluster));
+                    clustering.add(new Cluster(cluster));
         });
-        return clusterings;
+        return clustering;
     }
 
     static Result sequentialReduceCluster(List<Integer> cluster_of_counties, List<City> cities, int h) {
-        if (h == 1)
-            return new Result(cities.get(0));
+        Result r = new Result();
 
-        return IntStream.range(0, cluster_of_counties.size())
-                .boxed()
-                .filter(i -> cluster_of_counties.get(i) == h)
-                .map(idx -> new Result(cities.get(idx)))
-                .reduce(new Result(), Result::sum);
+        for (int i = 0; i < cities.size(); i++) {
+            if (cluster_of_counties.get(i) == h) {
+                City city = cities.get(i);
+                r.size += 1;
+                r.longitude += city.getLon();
+                r.latitude += city.getLat();
+            }
+        }
+        return r;
+
+        //return IntStream.range(0, cluster_of_counties.size())
+        //        .boxed()
+        //        .filter(i -> cluster_of_counties.get(i) == h)
+        //        .map(idx -> new Result(cities.get(idx)))
+        //        .reduce(new Result(), Result::sum);
     }
 
     static class ClusterReduce extends RecursiveTask<Result> {

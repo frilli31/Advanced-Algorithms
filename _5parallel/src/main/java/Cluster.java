@@ -33,9 +33,14 @@ public class Cluster {
     Centroid getCentroid() {
         int size = cities.size();
 
-        double new_x = cities.stream().mapToDouble(City::getLat).sum();
-        double new_y = cities.stream().mapToDouble(City::getLon).sum();
-
+        //double new_x = cities.stream().mapToDouble(City::getLat).sum();
+        //double new_y = cities.stream().mapToDouble(City::getLon).sum();
+        double new_x = 0;
+        double new_y = 0;
+        for (City city : cities) {
+            new_x += city.getLat();
+            new_y += city.getLon();
+        }
         return new Centroid(new_x / size, new_y / size);
     }
 

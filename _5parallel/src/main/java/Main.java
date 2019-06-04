@@ -65,7 +65,7 @@ public class Main {
             List<Double> serial_values = new ArrayList<>();
             List<Double> parallel_values = new ArrayList<>();
 
-            IntStream.rangeClosed(10, 100).forEach(number_of_centers -> {
+            for (int number_of_centers = 10; number_of_centers <= 100; number_of_centers++) {
                 System.out.println("Doing number of cluster " + number_of_centers);
                 centers.add((double) number_of_centers);
 
@@ -75,7 +75,7 @@ public class Main {
                 fstTime = System.currentTimeMillis();
                 Set<Cluster> parallel_kmeans_clusters = ParallelKMeans.run(cities_original, number_of_centers, 100, 1);
                 parallel_values.add((double) System.currentTimeMillis() - fstTime);
-            });
+            }
 
             Graph1.Labels labels = new Graph1.Labels("Time over Number of Clusters", "Number of clusters", "Time in ms");
             List<Graph1.Serie> series = new ArrayList<>();
