@@ -51,6 +51,9 @@ public class ParallelKMeans {
     }
 
     static Result sequentialReduceCluster(List<Integer> cluster_of_counties, List<City> cities, int h) {
+        if (h == 1)
+            return new Result(cities.get(0));
+
         return IntStream.range(0, cluster_of_counties.size())
                 .boxed()
                 .filter(i -> cluster_of_counties.get(i) == h)

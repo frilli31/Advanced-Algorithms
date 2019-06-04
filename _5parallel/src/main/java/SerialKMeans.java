@@ -5,7 +5,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class SerialKMeans {
-    static Set<Cluster> run(Set<City> counties, int number_of_centers, int iteractions) {
+    static Set<Cluster> run(List<City> counties, int number_of_centers, int iteractions) {
         List<Set<Cluster>> clusterings = new ArrayList<>();
 
         Set<Cluster> initial_clusters = counties.stream()
