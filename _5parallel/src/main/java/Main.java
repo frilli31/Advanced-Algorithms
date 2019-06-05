@@ -4,6 +4,7 @@ import org.knowm.xchart.demo.charts.ExampleChart;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -12,12 +13,9 @@ import java.util.stream.Stream;
 
 public class Main {
     public static void main(String[] args) {
-        List<City> co = new ArrayList<>(Parser.get("cities-and-towns-of-usa"));
-        List<City> cities_original = co.stream()
-                .filter(c -> c.getPopulation() > Integer.MIN_VALUE)
-                .collect(Collectors.toList());
+        List<City> cities_original = new ArrayList<>(Parser.get("cities-and-towns-of-usa"));
         System.out.println(cities_original.size());
-        /*
+
         // ANSWER 1
         {
             List<Double> populations = new ArrayList<>();
@@ -64,7 +62,9 @@ public class Main {
             List<Double> serial_values = new ArrayList<>();
             List<Double> parallel_values = new ArrayList<>();
 
-            for (int number_of_centers = 10; number_of_centers <= 100; number_of_centers++) {
+            IntStream stream = IntStream.of(10, 20, 50, 99, 100, 150, 200);
+
+            stream.forEach(number_of_centers -> {
                 System.out.println("Doing number of cluster " + number_of_centers);
                 centers.add((double) number_of_centers);
 
@@ -74,7 +74,7 @@ public class Main {
                 fstTime = System.currentTimeMillis();
                 Set<Cluster> parallel_kmeans_clusters = ParallelKMeans.run(cities_original, number_of_centers, 100, 1);
                 parallel_values.add((double) System.currentTimeMillis() - fstTime);
-            }
+            });
 
             Graph1.Labels labels = new Graph1.Labels("Time over Number of Clusters", "Number of clusters", "Time in ms");
             List<Graph1.Serie> series = new ArrayList<>();
@@ -90,14 +90,17 @@ public class Main {
             }
         }
 
-
         // ANSWER 3
+        /*
         {
             List<Double> interactions = new ArrayList<>();
             List<Double> serial_values = new ArrayList<>();
             List<Double> parallel_values = new ArrayList<>();
 
-            IntStream.rangeClosed(10, 1000).forEach(interaction -> {
+            IntStream _20_100 = IntStream.iterate(10, i -> i <= 100, i -> i + 10);
+            IntStream _100_1000 = IntStream.iterate(200, i -> i <= 1000, i -> i + 100);
+
+            IntStream.concat(_20_100, _100_1000).forEach(interaction -> {
                 System.out.println("Doing interaction " + interaction);
                 interactions.add((double) interaction);
 
@@ -122,7 +125,8 @@ public class Main {
                 e.printStackTrace();
             }
         }
-        */
+         */
+
         // ANSWER 4
         {
             List<Double> cutoffs = new ArrayList<>();

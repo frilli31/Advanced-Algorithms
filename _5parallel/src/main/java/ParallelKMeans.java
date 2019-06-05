@@ -48,14 +48,14 @@ public class ParallelKMeans {
                     });
         }
 
-        Set<Cluster> clustering = new HashSet<>();
+        Set<Cluster> clustering = new HashSet<>(number_of_centers);
 
         IntStream.range(0, number_of_centers).parallel()
                 .forEach(index_of_cluster -> {
-                    Set<City> cluster = IntStream.range(0, size)
+                    List<City> cluster = IntStream.range(0, size)
                             .filter(idx -> cluster_of_city.get(idx) == index_of_cluster)
                             .mapToObj(cities::get)
-                            .collect(Collectors.toSet());
+                            .collect(Collectors.toList());
                     clustering.add(new Cluster(cluster));
                 });
         return clustering;

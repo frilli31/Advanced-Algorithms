@@ -1,24 +1,24 @@
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Cluster {
-    Set<City> cities;
+    List<City> cities;
     Centroid centroid;
 
 
     public Cluster(City city) {
-        cities = new HashSet<City>();
+        cities = new ArrayList<City>();
         cities.add(city);
         centroid = new Centroid(city);
     }
 
-    public Cluster(Set<City> cities) {
+    public Cluster(List<City> cities) {
         this.cities = cities;
         this.centroid = getCentroid();
     }
 
-    public Cluster(Centroid centroid) {
-        cities = new HashSet<>();
+    public Cluster(Centroid centroid, int estimated_size) {
+        cities = new ArrayList<>(estimated_size);
         this.centroid = new Centroid(centroid.getLatitude(), centroid.getLongitude());
     }
 
@@ -33,15 +33,15 @@ public class Cluster {
     Centroid getCentroid() {
         int size = cities.size();
 
-        //double new_x = cities.stream().mapToDouble(City::getLat).sum();
-        //double new_y = cities.stream().mapToDouble(City::getLon).sum();
-        double new_x = 0;
-        double new_y = 0;
+        //double new_latitude = cities.stream().mapToDouble(City::getLat).sum();
+        //double new_longitude = cities.stream().mapToDouble(City::getLon).sum();
+        double new_latitude = 0;
+        double new_longitude = 0;
         for (City city : cities) {
-            new_x += city.getLat();
-            new_y += city.getLon();
+            new_latitude += city.getLat();
+            new_longitude += city.getLon();
         }
-        return new Centroid(new_x / size, new_y / size);
+        return new Centroid(new_latitude / size, new_longitude / size);
     }
 
     double getLatitude() {

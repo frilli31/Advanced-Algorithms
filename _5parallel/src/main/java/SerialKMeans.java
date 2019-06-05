@@ -1,23 +1,21 @@
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class SerialKMeans {
     static Set<Cluster> run(List<City> cities, int number_of_centers, int interactions) {
-        Set<Cluster> initial_clusters = cities.stream()
+        int size = cities.size();
+        List<Cluster> initial_clusters = cities.stream()
                 .sorted(Comparator.comparingInt(City::getPopulation).reversed())
                 .limit(number_of_centers)
                 .map(Centroid::new)
-                .map(Cluster::new)
-                .collect(Collectors.toSet());
+                .map(centroid -> new Cluster(centroid, size * 2 / number_of_centers))
+                .collect(Collectors.toList());
 
         for (int i = 0; i < interactions; i++) {
             if (i != 0)
                 for (Cluster cluster : initial_clusters) {
                     cluster.centroid = cluster.getCentroid();
-                    cluster.cities = new HashSet<>();
+                    cluster.cities = new ArrayList<>(size * 2 / number_of_centers); // enough space to not re-allocate (I hope)
                 }
 
             for (City city : cities) {
@@ -38,6 +36,6 @@ public class SerialKMeans {
         }
         for (Cluster cluster : initial_clusters)
             cluster.centroid = cluster.getCentroid();
-        return initial_clusters;
+        return new HashSet<>(initial_clusters);
     }
 }
