@@ -4,7 +4,6 @@ import org.knowm.xchart.demo.charts.ExampleChart;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -18,7 +17,7 @@ public class Main {
                 .filter(c -> c.getPopulation() > Integer.MIN_VALUE)
                 .collect(Collectors.toList());
         System.out.println(cities_original.size());
-
+        /*
         // ANSWER 1
         {
             List<Double> populations = new ArrayList<>();
@@ -123,7 +122,7 @@ public class Main {
                 e.printStackTrace();
             }
         }
-
+        */
         // ANSWER 4
         {
             List<Double> cutoffs = new ArrayList<>();

@@ -4,9 +4,9 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class ParallelKMeans {
-    static Set<Cluster> run(List<City> counties, int number_of_centers, int iteractions, int cutoff) {
-        int size = counties.size();
-        List<Centroid> initial_clusters = counties.stream()
+    static Set<Cluster> run(List<City> cities, int number_of_centers, int interactions, int cutoff) {
+        int size = cities.size();
+        List<Centroid> initial_clusters = cities.stream()
                 .parallel()
                 .sorted(Comparator.comparingInt(City::getPopulation).reversed())
                 .limit(number_of_centers)
@@ -16,15 +16,15 @@ public class ParallelKMeans {
         ArrayList<Integer> cluster_of_city = (ArrayList<Integer>) IntStream.generate(() -> 0).limit(size).boxed()
                 .collect(Collectors.toList());
 
-        for (int i = 0; i < iteractions; i++) {
+        for (int i = 0; i < interactions; i++) {
 
             IntStream.range(0, size)
                     .parallel()
                     .forEach(index -> {
-                        int nearestCluster = 0;
+                        int nearestCluster = -1;
                         double min_distance = Double.MAX_VALUE;
                         for (int i_centroid = 0; i_centroid < number_of_centers; i_centroid++) {
-                            int distance = initial_clusters.get(i_centroid).distance(counties.get(index));
+                            int distance = initial_clusters.get(i_centroid).distance(cities.get(index));
                             if (distance < min_distance) {
                                 nearestCluster = i_centroid;
                                 min_distance = distance;
@@ -32,19 +32,19 @@ public class ParallelKMeans {
                         }
                         //int nearestCluster = IntStream.range(0, number_of_centers)
                         //        .boxed()
-                        //        .min(Comparator.comparingDouble(x -> initial_clusters.get(x).distance(counties.get(index))))
+                        //        .min(Comparator.comparingDouble(x -> initial_clusters.get(x).distance(cities.get(index))))
                         //        .orElseThrow();
-                        
+
                         cluster_of_city.set(index, nearestCluster);
-            });
+                    });
 
             IntStream.range(0, number_of_centers)
                     .parallel()
                     .forEach(index_of_center -> {
-                        Result r = new ClusterReduce(cluster_of_city, counties, index_of_center, cutoff).invoke();
+                        Result r = new ClusterReduce(cluster_of_city, cities, index_of_center, cutoff).invoke();
                         double mid_latitude = r.latitude / r.size;
                         double mid_longitude = r.longitude / r.size;
-                        initial_clusters.set(index_of_center, new Centroid(mid_latitude, mid_longitude));
+                        initial_clusters.set(index_of_center, new Centroid(mid_longitude, mid_latitude));
                     });
         }
 
@@ -52,12 +52,12 @@ public class ParallelKMeans {
 
         IntStream.range(0, number_of_centers).parallel()
                 .forEach(index_of_cluster -> {
-            Set<City> cluster = IntStream.range(0, size)
-                    .filter(idx -> cluster_of_city.get(idx) == index_of_cluster)
-                    .mapToObj(counties::get)
-                    .collect(Collectors.toSet());
+                    Set<City> cluster = IntStream.range(0, size)
+                            .filter(idx -> cluster_of_city.get(idx) == index_of_cluster)
+                            .mapToObj(cities::get)
+                            .collect(Collectors.toSet());
                     clustering.add(new Cluster(cluster));
-        });
+                });
         return clustering;
     }
 
