@@ -5,7 +5,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class SerialKMeans {
-    static Set<Cluster> run(List<City> cities, int number_of_centers, int iteractions) {
+    static Set<Cluster> run(List<City> cities, int number_of_centers, int interactions) {
         Set<Cluster> initial_clusters = cities.stream()
                 .sorted(Comparator.comparingInt(City::getPopulation).reversed())
                 .limit(number_of_centers)
@@ -13,7 +13,7 @@ public class SerialKMeans {
                 .map(Cluster::new)
                 .collect(Collectors.toSet());
 
-        for (int i = 0; i < iteractions; i++) {
+        for (int i = 0; i < interactions; i++) {
             if (i != 0)
                 for (Cluster cluster : initial_clusters) {
                     cluster.centroid = cluster.getCentroid();
