@@ -25,10 +25,10 @@ public class Parser {
         String replaced = fileContent.replace(" ", "");
         Pattern patternOfDimension = Pattern.compile("\n(\\d+),([^,]+),([^,]+),([^,]+),(\\S*)");
         Matcher matcherOfDimension = patternOfDimension.matcher(replaced);
-        Set<City> counties = new HashSet<>();
+        Set<City> cities = new HashSet<>();
 
         matcherOfDimension.results().forEach(x -> {
-            counties.add(new City(
+            cities.add(new City(
                     Integer.parseInt(x.group(1)),
                     x.group(2),
                     Double.parseDouble(x.group(4)),
@@ -36,7 +36,7 @@ public class Parser {
                     Integer.parseInt(x.group(3))
             ));
         });
-        return counties;
+        return cities;
     }
 }
 

@@ -1,6 +1,11 @@
+import org.apache.commons.math3.util.FastMath;
+
 public class Centroid {
-    private double latitude;
-    private double longitude;
+    /**
+     * TSPLIB geo distance
+     */
+    private static final double R = 6378.388;
+    double latitude;
 
     Centroid(double latitude, double longitude) {
         this.latitude = latitude;
@@ -12,35 +17,29 @@ public class Centroid {
         longitude = city.getLon();
     }
 
-    private static double coordinates2Radians(double coordinate) {
-        int deg = (int) coordinate;
-        double min = coordinate - deg;
-        double rad = (Math.PI * (deg + 5.0 * min / 3.0) / 180.0);
-        return rad;
-    }
-
     public String toString() {
         return latitude + " " + longitude + " ";
     }
 
-    /**
-     * TSPLIB geo distance
-     */
+    double longitude;
+
+    private static double coordinates2Radians(double coordinate) {
+        int deg = (int) coordinate;
+        return (FastMath.PI * (deg + 5.0 * (coordinate - deg) / 3.0) / 180.0);
+    }
+
     public int distance(City city) {
+        //return (int) (FastMath.abs(latitude-city.getLat())+ FastMath.abs(longitude-city.getLon()));
         double lat1Rad = coordinates2Radians(latitude);
         double lat2Rad = coordinates2Radians(city.getLat());
         double lon1Rad = coordinates2Radians(longitude);
         double lon2Rad = coordinates2Radians(city.getLon());
 
-        double R = 6378.388;
+        double q1 = FastMath.cos(lon1Rad - lon2Rad);
+        double q2 = FastMath.cos(lat1Rad - lat2Rad);
+        double q3 = FastMath.cos(lat1Rad + lat2Rad);
 
-        double q1 = Math.cos(lon1Rad - lon2Rad);
-        double q2 = Math.cos(lat1Rad - lat2Rad);
-        double q3 = Math.cos(lat1Rad + lat2Rad);
-
-        double distance = (R * Math.acos(0.5 * ((1.0 + q1) * q2 - (1.0 - q1) * q3)) + 1.0);
-
-        return (int) distance;
+        return (int) (R * FastMath.acos(0.5 * ((1.0 + q1) * q2 - (1.0 - q1) * q3)) + 1.0);
     }
 
     public double getLatitude() {

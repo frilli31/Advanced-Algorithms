@@ -4,18 +4,16 @@ import org.knowm.xchart.demo.charts.ExampleChart;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.function.Supplier;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 public class Main {
     public static void main(String[] args) {
         List<City> cities_original = new ArrayList<>(Parser.get("cities-and-towns-of-usa"));
         System.out.println(cities_original.size());
-
+        /*
         // ANSWER 1
         {
             List<Double> populations = new ArrayList<>();
@@ -31,29 +29,15 @@ public class Main {
                 System.out.println("Doing " + filter + " Size is " + cities.size());
 
                 populations.add((double) cities.size());
-
-                long fstTime = System.currentTimeMillis();
-                Set<Cluster> serial_kmeans_clusters = SerialKMeans.run(cities, 50, 100);
-                serial_values.add((double) System.currentTimeMillis() - fstTime);
-                System.out.println("Done Serial " + filter);
-                fstTime = System.currentTimeMillis();
-                Set<Cluster> parallel_kmeans_clusters = ParallelKMeans.run(cities, 50, 100, 1);
-                parallel_values.add((double) System.currentTimeMillis() - fstTime);
-                System.out.println("Done Parallel " + filter);
-
+                serial_values.add(get_time(() -> SerialKMeans.run(cities, 50, 100)));
+                parallel_values.add(get_time(() -> ParallelKMeans.run(cities, 50, 100, 1)));
             });
             Graph1.Labels labels = new Graph1.Labels("Time over Dataset Dimension", "Number of cities", "Time in ms");
             List<Graph1.Serie> series = new ArrayList<>();
             series.add(new Graph1.Serie("Serial", serial_values));
             series.add(new Graph1.Serie("Parallel", parallel_values));
 
-            ExampleChart<XYChart> exampleChart = new Graph1(labels, populations, series);
-            XYChart chart = exampleChart.getChart();
-            try {
-                BitmapEncoder.saveBitmapWithDPI(chart, "./charts/Chart_1", BitmapEncoder.BitmapFormat.JPG, 300);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            export_chart("Chart_1", labels, populations, series, false);
         }
 
         // ANSWER 2
@@ -62,18 +46,11 @@ public class Main {
             List<Double> serial_values = new ArrayList<>();
             List<Double> parallel_values = new ArrayList<>();
 
-            IntStream stream = IntStream.of(10, 20, 50, 99, 100, 150, 200);
-
-            stream.forEach(number_of_centers -> {
+            IntStream.iterate(10, i -> i<=100, i -> i+10).forEach(number_of_centers -> {
                 System.out.println("Doing number of cluster " + number_of_centers);
                 centers.add((double) number_of_centers);
-
-                long fstTime = System.currentTimeMillis();
-                Set<Cluster> serial_kmeans_clusters = SerialKMeans.run(cities_original, number_of_centers, 100);
-                serial_values.add((double) System.currentTimeMillis() - fstTime);
-                fstTime = System.currentTimeMillis();
-                Set<Cluster> parallel_kmeans_clusters = ParallelKMeans.run(cities_original, number_of_centers, 100, 1);
-                parallel_values.add((double) System.currentTimeMillis() - fstTime);
+                serial_values.add(get_time(() -> SerialKMeans.run(cities_original, number_of_centers, 100)));
+                parallel_values.add(get_time(() -> ParallelKMeans.run(cities_original, number_of_centers, 100, 1)));
             });
 
             Graph1.Labels labels = new Graph1.Labels("Time over Number of Clusters", "Number of clusters", "Time in ms");
@@ -81,17 +58,11 @@ public class Main {
             series.add(new Graph1.Serie("Serial", serial_values));
             series.add(new Graph1.Serie("Parallel", parallel_values));
 
-            ExampleChart<XYChart> exampleChart = new Graph1(labels, centers, series);
-            XYChart chart = exampleChart.getChart();
-            try {
-                BitmapEncoder.saveBitmapWithDPI(chart, "./charts/Chart_2", BitmapEncoder.BitmapFormat.JPG, 300);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            export_chart("Chart_2", labels, centers, series, false);
         }
 
         // ANSWER 3
-        /*
+
         {
             List<Double> interactions = new ArrayList<>();
             List<Double> serial_values = new ArrayList<>();
@@ -102,14 +73,11 @@ public class Main {
 
             IntStream.concat(_20_100, _100_1000).forEach(interaction -> {
                 System.out.println("Doing interaction " + interaction);
-                interactions.add((double) interaction);
 
-                long fstTime = System.currentTimeMillis();
-                Set<Cluster> serial_kmeans_clusters = SerialKMeans.run(cities_original, 50, interaction);
-                serial_values.add((double) System.currentTimeMillis() - fstTime);
-                fstTime = System.currentTimeMillis();
-                Set<Cluster> parallel_kmeans_clusters = ParallelKMeans.run(cities_original, 50, interaction, 1);
-                parallel_values.add((double) System.currentTimeMillis() - fstTime);
+                interactions.add((double) interaction);
+                serial_values.add(get_time(() -> SerialKMeans.run(cities_original, 50, interaction)));
+                parallel_values.add(get_time(() -> ParallelKMeans.run(cities_original, 50, interaction, 1)));
+
             });
 
             Graph1.Labels labels = new Graph1.Labels("Time over Number of Interaction", "Number of interactions", "Time in ms");
@@ -117,13 +85,7 @@ public class Main {
             series.add(new Graph1.Serie("Serial", serial_values));
             series.add(new Graph1.Serie("Parallel", parallel_values));
 
-            ExampleChart<XYChart> exampleChart = new Graph1(labels, interactions, series);
-            XYChart chart = exampleChart.getChart();
-            try {
-                BitmapEncoder.saveBitmapWithDPI(chart, "./charts/Chart_3", BitmapEncoder.BitmapFormat.JPG, 300);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            export_chart("Chart_3", labels, interactions, series, false);
         }
          */
 
@@ -135,33 +97,37 @@ public class Main {
             IntStream _0_10 = IntStream.range(1, 10);
             IntStream _20_100 = IntStream.iterate(20, i -> i <= 100, i -> i + 10);
             IntStream _100_1000 = IntStream.iterate(200, i -> i <= 1000, i -> i + 100);
-            IntStream _1000_ = IntStream.iterate(2_000, i -> i <= 38_000, i -> i + 1000);
+            IntStream _1000_ = IntStream.iterate(2_000, i -> i <= 10_000, i -> i + 1_000);
+            IntStream _10000_ = IntStream.iterate(20_000, i -> i <= 10_000, i -> i + 10_000);
             IntStream end = IntStream.of(cities_original.size());
 
-            Stream.of(_0_10, _20_100, _100_1000, _1000_, end).reduce(IntStream::concat).get().forEach(cutoff -> {
-                System.out.print("Doing cutoff " + cutoff + "\t");
+            //Stream.of(_0_10, _20_100, _100_1000, _1000_,_10000_, end).reduce(IntStream::concat).get().
+            IntStream.iterate(1, i -> i <= cities_original.size(), i -> i * 2).forEach(cutoff -> {
+                System.out.println("Doing cutoff " + cutoff);
                 cutoffs.add((double) cutoff);
-
-                long fstTime = System.currentTimeMillis();
-                Set<Cluster> parallel_kmeans_clusters = ParallelKMeans.run(cities_original, 50, 100, cutoff);
-                double value = (double) System.currentTimeMillis() - fstTime;
-                parallel_values.add(value);
-                System.out.println(value);
-                System.gc();
-                System.runFinalization();
+                parallel_values.add(get_time(() -> ParallelKMeans.run(cities_original, 50, 100, cutoff)));
             });
 
             Graph1.Labels labels = new Graph1.Labels("Time over Cutoff value", "Cutoff value", "Time in ms");
             List<Graph1.Serie> series = new ArrayList<>();
             series.add(new Graph1.Serie("Parallel", parallel_values));
+            export_chart("Chart_4", labels, cutoffs, series, true);
+        }
+    }
 
-            ExampleChart<XYChart> exampleChart = new Graph1(labels, cutoffs, series, true);
-            XYChart chart = exampleChart.getChart();
-            try {
-                BitmapEncoder.saveBitmapWithDPI(chart, "./charts/Chart_4", BitmapEncoder.BitmapFormat.JPG, 300);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+    private static double get_time(Supplier<Set<Cluster>> f) {
+        long start_time = System.currentTimeMillis();
+        f.get();
+        return System.currentTimeMillis() - start_time;
+    }
+
+    private static void export_chart(String name, Graph1.Labels labels, List<Double> x_serie, List<Graph1.Serie> series, boolean is_log) {
+        ExampleChart<XYChart> exampleChart = new Graph1(labels, x_serie, series, is_log);
+        XYChart chart = exampleChart.getChart();
+        try {
+            BitmapEncoder.saveBitmapWithDPI(chart, "./charts/" + name, BitmapEncoder.BitmapFormat.JPG, 300);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }

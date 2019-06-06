@@ -5,9 +5,8 @@ import java.util.stream.IntStream;
 
 public class ParallelKMeans {
     static Set<Cluster> run(List<City> cities, int number_of_centers, int interactions, int cutoff) {
-        int size = cities.size();
-        List<Centroid> initial_clusters = cities.stream()
-                .parallel()
+        final int size = cities.size();
+        List<Centroid> initial_clusters = cities.parallelStream()
                 .sorted(Comparator.comparingInt(City::getPopulation).reversed())
                 .limit(number_of_centers)
                 .map(Centroid::new)
@@ -17,6 +16,7 @@ public class ParallelKMeans {
                 .collect(Collectors.toList());
 
         for (int i = 0; i < interactions; i++) {
+            BitSet cluster_updated = new BitSet(number_of_centers);
 
             IntStream.range(0, size)
                     .parallel()
@@ -30,27 +30,24 @@ public class ParallelKMeans {
                                 min_distance = distance;
                             }
                         }
-                        //int nearestCluster = IntStream.range(0, number_of_centers)
-                        //        .boxed()
-                        //        .min(Comparator.comparingDouble(x -> initial_clusters.get(x).distance(cities.get(index))))
-                        //        .orElseThrow();
-
+                        cluster_updated.set(nearestCluster);
                         cluster_of_city.set(index, nearestCluster);
                     });
 
             IntStream.range(0, number_of_centers)
                     .parallel()
+                    .filter(cluster_updated::get)
                     .forEach(index_of_center -> {
                         Result r = new ClusterReduce(cluster_of_city, cities, index_of_center, cutoff).invoke();
                         double mid_latitude = r.latitude / r.size;
                         double mid_longitude = r.longitude / r.size;
-                        initial_clusters.set(index_of_center, new Centroid(mid_longitude, mid_latitude));
+                        initial_clusters.set(index_of_center, new Centroid(mid_latitude, mid_longitude));
                     });
         }
 
         Set<Cluster> clustering = new HashSet<>(number_of_centers);
 
-        IntStream.range(0, number_of_centers).parallel()
+        IntStream.range(0, number_of_centers)
                 .forEach(index_of_cluster -> {
                     List<City> cluster = IntStream.range(0, size)
                             .filter(idx -> cluster_of_city.get(idx) == index_of_cluster)
@@ -61,11 +58,11 @@ public class ParallelKMeans {
         return clustering;
     }
 
-    static Result sequentialReduceCluster(List<Integer> cluster_of_counties, List<City> cities, int h) {
+    static Result sequentialReduceCluster(List<Integer> cluster_of_cities, List<City> cities, int h) {
         Result r = new Result();
 
-        for (int i = 0; i < cities.size(); i++) {
-            if (cluster_of_counties.get(i) == h) {
+        for (int i = 0; i < cluster_of_cities.size(); i++) {
+            if (cluster_of_cities.get(i) == h) {
                 City city = cities.get(i);
                 r.size += 1;
                 r.longitude += city.getLon();
@@ -73,22 +70,16 @@ public class ParallelKMeans {
             }
         }
         return r;
-
-        //return IntStream.range(0, cluster_of_counties.size())
-        //        .boxed()
-        //        .filter(i -> cluster_of_counties.get(i) == h)
-        //        .map(idx -> new Result(cities.get(idx)))
-        //        .reduce(new Result(), Result::sum);
     }
 
     static class ClusterReduce extends RecursiveTask<Result> {
-        List<Integer> cluster_of_counties;
-        List<City> cities;
-        int h;
-        int cutoff;
+        final List<Integer> cluster_of_cities;
+        final List<City> cities;
+        final int h;
+        final int cutoff;
 
-        ClusterReduce(List<Integer> cluster_of_counties, List<City> cities, int h, int cutoff) {
-            this.cluster_of_counties = cluster_of_counties;
+        ClusterReduce(List<Integer> cluster_of_cities, List<City> cities, int h, int cutoff) {
+            this.cluster_of_cities = cluster_of_cities;
             this.cities = cities;
             this.h = h;
             this.cutoff = cutoff;
@@ -96,14 +87,14 @@ public class ParallelKMeans {
 
         @Override
         public Result compute() {
-            int size = cluster_of_counties.size();
+            final int size = cluster_of_cities.size();
 
             if (size <= cutoff) {
-                return sequentialReduceCluster(cluster_of_counties, cities, h);
+                return sequentialReduceCluster(cluster_of_cities, cities, h);
             } else {
                 int mid = Math.floorDiv(size, 2);
-                ClusterReduce r1 = new ClusterReduce(cluster_of_counties.subList(0, mid), cities.subList(0, mid), h, cutoff);
-                ClusterReduce r2 = new ClusterReduce(cluster_of_counties.subList(mid, size), cities.subList(mid, size), h, cutoff);
+                ClusterReduce r1 = new ClusterReduce(cluster_of_cities.subList(0, mid), cities.subList(0, mid), h, cutoff);
+                ClusterReduce r2 = new ClusterReduce(cluster_of_cities.subList(mid, size), cities.subList(mid, size), h, cutoff);
                 r1.fork();
                 return Result.sum(r2.compute(), r1.join());
             }
@@ -115,15 +106,6 @@ public class ParallelKMeans {
         double longitude;
         int size;
 
-        Result() {
-        }
-
-        Result(City city) {
-            this.latitude = city.getLat();
-            this.longitude = city.getLon();
-            this.size = 1;
-        }
-
         static Result sum(Result r1, Result r2) {
             r1.latitude += r2.latitude;
             r1.longitude += r2.longitude;
@@ -132,5 +114,3 @@ public class ParallelKMeans {
         }
     }
 }
-
-

@@ -7,9 +7,19 @@ public class Cluster {
 
 
     public Cluster(City city) {
-        cities = new ArrayList<City>();
+        cities = new ArrayList<>();
         cities.add(city);
         centroid = new Centroid(city);
+    }
+
+    public Cluster(Centroid centroid) {
+        cities = new ArrayList<>();
+        this.centroid = centroid;
+    }
+
+    @Override
+    public int hashCode() {
+        return toString().hashCode();
     }
 
     public Cluster(List<City> cities) {
@@ -17,24 +27,34 @@ public class Cluster {
         this.centroid = getCentroid();
     }
 
-    public Cluster(Centroid centroid, int estimated_size) {
-        cities = new ArrayList<>(estimated_size);
-        this.centroid = new Centroid(centroid.getLatitude(), centroid.getLongitude());
+    @Override
+    public boolean equals(Object obj) {
+        return toString().equals(obj.toString());
     }
 
     public String toString() {
-        return (int) centroid.getLatitude() + ";" + (int) centroid.getLongitude();
+        return "Size: " + cities.size() + "\tCoord: " + (int) centroid.getLatitude() + "\t" + (int) centroid.getLongitude();
     }
 
-    void insert(City county) {
-        cities.add(county);
+    void insert(City city) {
+        cities.add(city);
+    }
+
+    void updateCentroid() {
+        centroid = getCentroid();
+    }
+
+    void cleanCounties(int estimated_size) {
+        cities = new ArrayList<>(estimated_size);
     }
 
     Centroid getCentroid() {
         int size = cities.size();
 
-        //double new_latitude = cities.stream().mapToDouble(City::getLat).sum();
-        //double new_longitude = cities.stream().mapToDouble(City::getLon).sum();
+        if (size == 0) {
+            return new Centroid(0, 0);
+        }
+
         double new_latitude = 0;
         double new_longitude = 0;
         for (City city : cities) {
@@ -52,11 +72,7 @@ public class Cluster {
         return centroid.getLongitude();
     }
 
-    double distance(City county) {
-        return centroid.distance(county);
-    }
-
-    double getError() {
-        return cities.stream().mapToDouble(county -> county.getPopulation() * Math.pow(centroid.distance(county), 2)).sum();
+    int distance(City city) {
+        return centroid.distance(city);
     }
 }
