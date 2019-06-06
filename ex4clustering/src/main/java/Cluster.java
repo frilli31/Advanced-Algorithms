@@ -54,6 +54,14 @@ public class Cluster {
         return new Centroid(new_x/size, new_y/size);
     }
 
+    void updateCentroid() {
+        centroid = getCentroid();
+    }
+
+    void cleanCounties() {
+        counties = new HashSet<County>();
+    }
+
     double getX() {
         return centroid.getX();
     }
