@@ -4,16 +4,17 @@ import org.knowm.xchart.demo.charts.ExampleChart;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class Main {
     public static void main(String[] args) {
         List<City> cities_original = new ArrayList<>(Parser.get("cities-and-towns-of-usa"));
-        System.out.println(cities_original.size());
-        /*
+
         // ANSWER 1
         {
             List<Double> populations = new ArrayList<>();
@@ -87,21 +88,12 @@ public class Main {
 
             export_chart("Chart_3", labels, interactions, series, false);
         }
-         */
 
         // ANSWER 4
         {
             List<Double> cutoffs = new ArrayList<>();
             List<Double> parallel_values = new ArrayList<>();
 
-            IntStream _0_10 = IntStream.range(1, 10);
-            IntStream _20_100 = IntStream.iterate(20, i -> i <= 100, i -> i + 10);
-            IntStream _100_1000 = IntStream.iterate(200, i -> i <= 1000, i -> i + 100);
-            IntStream _1000_ = IntStream.iterate(2_000, i -> i <= 10_000, i -> i + 1_000);
-            IntStream _10000_ = IntStream.iterate(20_000, i -> i <= 10_000, i -> i + 10_000);
-            IntStream end = IntStream.of(cities_original.size());
-
-            //Stream.of(_0_10, _20_100, _100_1000, _1000_,_10000_, end).reduce(IntStream::concat).get().
             IntStream.iterate(1, i -> i <= cities_original.size(), i -> i * 2).forEach(cutoff -> {
                 System.out.println("Doing cutoff " + cutoff);
                 cutoffs.add((double) cutoff);
