@@ -17,44 +17,45 @@ public class ParallelKMeans {
 
         for (int i = 0; i < interactions; i++) {
             IntStream.range(0, size)
-                    .parallel()
-                    .forEach(index -> {
-                        int nearestCluster = -1;
-                        double min_distance = Double.MAX_VALUE;
-                        for (int i_centroid = 0; i_centroid < number_of_centers; i_centroid++) {
-                            int distance = initial_clusters.get(i_centroid).distance(cities.get(index));
-                            if (distance < min_distance) {
-                                nearestCluster = i_centroid;
-                                min_distance = distance;
-                            }
+                .parallel()
+                .forEach(index -> {
+                    int nearestCluster = -1;
+                    double min_distance = Double.MAX_VALUE;
+                    for (int i_centroid = 0; i_centroid < number_of_centers; i_centroid++) {
+                        int distance = initial_clusters.get(i_centroid).distance(cities.get(index));
+                        if (distance < min_distance) {
+                            nearestCluster = i_centroid;
+                            min_distance = distance;
                         }
-                        cluster_of_city.set(index, nearestCluster);
-                    });
+                    }
+                    cluster_of_city.set(index, nearestCluster);
+                });
 
             IntStream.range(0, number_of_centers)
-                    .parallel()
-                    .forEach(index_of_center -> {
-                        Result r = new ClusterReduce(cluster_of_city, cities, index_of_center, cutoff).invoke();
-                        if (r.size > 0) {
-                            double mid_latitude = r.latitude / r.size;
-                            double mid_longitude = r.longitude / r.size;
-                            initial_clusters.set(index_of_center, new Centroid(mid_latitude, mid_longitude));
-                        }
-                    });
+                .parallel()
+                .forEach(index_of_center -> {
+                    Result r = new ClusterReduce(cluster_of_city, cities, index_of_center, cutoff).invoke();
+                    if (r.size > 0) {
+                        double mid_latitude = r.latitude / r.size;
+                        double mid_longitude = r.longitude / r.size;
+                        initial_clusters.set(index_of_center, new Centroid(mid_latitude, mid_longitude));
+                    }
+                });
         }
 
-        Set<Cluster> clustering = new HashSet<>(number_of_centers);
+        Set<Cluster> clusters = new HashSet<>(number_of_centers);
 
         IntStream.range(0, number_of_centers)
-                .forEach(index_of_cluster -> {
-                    List<City> cluster = IntStream.range(0, size)
-                            .filter(idx -> cluster_of_city.get(idx) == index_of_cluster)
-                            .mapToObj(cities::get)
-                            .collect(Collectors.toList());
-                    if (cluster.size() > 0)
-                        clustering.add(new Cluster(cluster));
-                });
-        return clustering;
+            .parallel()
+            .forEach(index_of_cluster -> {
+                List<City> cluster = IntStream.range(0, size)
+                        .filter(idx -> cluster_of_city.get(idx) == index_of_cluster)
+                        .mapToObj(cities::get)
+                        .collect(Collectors.toList());
+                if (cluster.size() > 0)
+                    clusters.add(new Cluster(cluster));
+            });
+        return clusters;
     }
 
     static Result sequentialReduceCluster(List<Integer> cluster_of_cities, List<City> cities, int h) {

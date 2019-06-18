@@ -2,7 +2,9 @@ import org.knowm.xchart.BitmapEncoder;
 import org.knowm.xchart.XYChart;
 import org.knowm.xchart.demo.charts.ExampleChart;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -15,11 +17,9 @@ public class Main {
     public static void main(String[] args) {
         List<City> cities_original = new ArrayList<>(Parser.get("cities-and-towns-of-usa"));
 
-        System.out.println(get_time(() ->ParallelKMeans.run(cities_original, 99, 100, 1)));
-        System.out.println(get_time(() ->ParallelKMeans.run(cities_original, 50, 100, 100_000)));
-        System.out.println(get_time(() ->SerialKMeans.run(cities_original, 50, 100)));
-
-        /*
+        // System.out.println(get_time(() ->ParallelKMeans.run(cities_original, 99, 100, 1)));
+        // System.out.println(get_time(() ->ParallelKMeans.run(cities_original, 50, 100, 100_000)));
+        // System.out.println(get_time(() ->SerialKMeans.run(cities_original, 50, 100)));
 
         // ANSWER 1
         {
@@ -27,13 +27,13 @@ public class Main {
             List<Double> serial_values = new ArrayList<>();
             List<Double> parallel_values = new ArrayList<>();
 
-            List<Integer> filters = Arrays.asList(100_000, 50_000, 15_000, 5_000, 2_000, 250, Integer.MIN_VALUE);
+            List<Integer> filters = Arrays.asList(100_000, 50_000, 15_000, 5_000, 2_000, 250, -1);
 
             filters.forEach(filter -> {
                 List<City> cities = cities_original.stream()
                         .filter(c -> c.getPopulation() > filter)
                         .collect(Collectors.toList());
-                System.out.println("Doing " + filter + " Size is " + cities.size());
+                System.out.println(cities.size() + " cities with more than " + filter + " population");
 
                 populations.add((double) cities.size());
                 serial_values.add(get_time(() -> SerialKMeans.run(cities, 50, 100)));
@@ -109,7 +109,7 @@ public class Main {
             List<Graph1.Serie> series = new ArrayList<>();
             series.add(new Graph1.Serie("Parallel", parallel_values));
             export_chart("Chart_4", labels, cutoffs, series, true);
-        }*/
+        }
     }
 
     private static double get_time(Supplier<Set<Cluster>> f) {
