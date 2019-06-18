@@ -37,7 +37,7 @@ fn bench_fibs(c: &mut Criterion) {
         .with_function("Parallel", |b, i| {
             b.iter(|| parallel_k_means(i.0.as_ref(), 50, 100, 1))
         })
-        .sample_size(3)
+        .sample_size(2)
         .warm_up_time(std::time::Duration::from_secs(1)),
     );
 }

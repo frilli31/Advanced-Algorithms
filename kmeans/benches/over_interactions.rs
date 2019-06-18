@@ -13,8 +13,8 @@ fn bench_fibs(c: &mut Criterion) {
         static ref CITIES: Vec<City> = get_sorted_cities("cities-and-towns-of-usa.csv");
     }
 
-    let mut all: Vec<u32> = (10..100).step_by(10).collect();
-    all.append(&mut (100..=1000).step_by(100).collect());
+    let mut all: Vec<u32> = (10..100).step_by(15).collect();
+    all.append(&mut (100..=1000).step_by(300).collect());
 
     c.bench(
         "over_interactions",
@@ -26,7 +26,7 @@ fn bench_fibs(c: &mut Criterion) {
         .with_function("Parallel", |b, i| {
             b.iter(|| parallel_k_means(&*CITIES, 50, *i, 1))
         })
-        .sample_size(3)
+        .sample_size(2)
         .warm_up_time(std::time::Duration::from_secs(1)),
     );
 }

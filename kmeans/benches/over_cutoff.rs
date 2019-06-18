@@ -22,13 +22,13 @@ fn bench_fibs(c: &mut Criterion) {
     cutoffs.push(CITIES.len());
 
     c.bench(
-        "over_interactions",
+        "over_cutoff",
         ParameterizedBenchmark::new(
             "Parallel",
             |b, i| b.iter(|| parallel_k_means(&*CITIES, 50, 100, *i)),
             cutoffs,
         )
-        .sample_size(3)
+        .sample_size(2)
         .warm_up_time(std::time::Duration::from_secs(1)),
     );
 }
