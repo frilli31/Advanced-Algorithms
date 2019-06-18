@@ -5,7 +5,11 @@ public class Centroid {
      * TSPLIB geo distance
      */
     private static final double R = 6378.388;
+    private static final double PI = 3.141592;
+
+
     double latitude;
+    double longitude;
 
     Centroid(double latitude, double longitude) {
         this.latitude = latitude;
@@ -21,11 +25,10 @@ public class Centroid {
         return latitude + " " + longitude + " ";
     }
 
-    double longitude;
 
     private static double coordinates2Radians(double coordinate) {
         int deg = (int) coordinate;
-        return (FastMath.PI * (deg + 5.0 * (coordinate - deg) / 3.0) / 180.0);
+        return (PI * (deg + 5.0 * (coordinate - deg) / 3.0) / 180.0);
     }
 
     public int distance(City city) {

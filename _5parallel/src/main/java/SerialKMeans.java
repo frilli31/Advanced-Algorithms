@@ -34,6 +34,8 @@ public class SerialKMeans {
             }
             clusters.forEach(Cluster::updateCentroid);
         }
-        return new HashSet<>(clusters);
+        return clusters.stream()
+                .filter(cluster -> cluster.cities.size() > 0)
+                .collect(Collectors.toSet());
     }
 }

@@ -15,6 +15,12 @@ public class Main {
     public static void main(String[] args) {
         List<City> cities_original = new ArrayList<>(Parser.get("cities-and-towns-of-usa"));
 
+        System.out.println(get_time(() ->ParallelKMeans.run(cities_original, 99, 100, 1)));
+        System.out.println(get_time(() ->ParallelKMeans.run(cities_original, 50, 100, 100_000)));
+        System.out.println(get_time(() ->SerialKMeans.run(cities_original, 50, 100)));
+
+        /*
+
         // ANSWER 1
         {
             List<Double> populations = new ArrayList<>();
@@ -63,14 +69,13 @@ public class Main {
         }
 
         // ANSWER 3
-
         {
             List<Double> interactions = new ArrayList<>();
             List<Double> serial_values = new ArrayList<>();
             List<Double> parallel_values = new ArrayList<>();
 
             IntStream _20_100 = IntStream.iterate(10, i -> i <= 100, i -> i + 10);
-            IntStream _100_1000 = IntStream.iterate(200, i -> i <= 1000, i -> i + 100);
+            IntStream _100_1000 = IntStream.iterate(400, i -> i <= 1000, i -> i + 300);
 
             IntStream.concat(_20_100, _100_1000).forEach(interaction -> {
                 System.out.println("Doing interaction " + interaction);
@@ -104,7 +109,7 @@ public class Main {
             List<Graph1.Serie> series = new ArrayList<>();
             series.add(new Graph1.Serie("Parallel", parallel_values));
             export_chart("Chart_4", labels, cutoffs, series, true);
-        }
+        }*/
     }
 
     private static double get_time(Supplier<Set<Cluster>> f) {

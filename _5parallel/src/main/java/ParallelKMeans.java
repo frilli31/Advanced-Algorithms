@@ -16,8 +16,6 @@ public class ParallelKMeans {
                 .collect(Collectors.toList());
 
         for (int i = 0; i < interactions; i++) {
-            BitSet cluster_updated = new BitSet(number_of_centers);
-
             IntStream.range(0, size)
                     .parallel()
                     .forEach(index -> {
@@ -30,18 +28,18 @@ public class ParallelKMeans {
                                 min_distance = distance;
                             }
                         }
-                        cluster_updated.set(nearestCluster);
                         cluster_of_city.set(index, nearestCluster);
                     });
 
             IntStream.range(0, number_of_centers)
                     .parallel()
-                    .filter(cluster_updated::get)
                     .forEach(index_of_center -> {
                         Result r = new ClusterReduce(cluster_of_city, cities, index_of_center, cutoff).invoke();
-                        double mid_latitude = r.latitude / r.size;
-                        double mid_longitude = r.longitude / r.size;
-                        initial_clusters.set(index_of_center, new Centroid(mid_latitude, mid_longitude));
+                        if (r.size > 0) {
+                            double mid_latitude = r.latitude / r.size;
+                            double mid_longitude = r.longitude / r.size;
+                            initial_clusters.set(index_of_center, new Centroid(mid_latitude, mid_longitude));
+                        }
                     });
         }
 
@@ -53,7 +51,8 @@ public class ParallelKMeans {
                             .filter(idx -> cluster_of_city.get(idx) == index_of_cluster)
                             .mapToObj(cities::get)
                             .collect(Collectors.toList());
-                    clustering.add(new Cluster(cluster));
+                    if (cluster.size() > 0)
+                        clustering.add(new Cluster(cluster));
                 });
         return clustering;
     }

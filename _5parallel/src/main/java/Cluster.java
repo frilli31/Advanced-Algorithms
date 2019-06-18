@@ -52,7 +52,7 @@ public class Cluster {
         int size = cities.size();
 
         if (size == 0) {
-            return new Centroid(0, 0);
+            return centroid;
         }
 
         double new_latitude = 0;

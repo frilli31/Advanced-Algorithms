@@ -11,7 +11,7 @@ function () {
             centroid: d.centroid,
         };
 })
-    const centroids = Array.from(new Set(dataset.map(county = > county.centroid));
+    const centroids = Array.from(new Set(dataset.map(city = > city.centroid));
 ).
     map(centroid = >
     centroid.split(';').map(Number),;
@@ -70,7 +70,7 @@ function () {
     ];
     const formatAsThousands = d3.format(',.2r');
 
-    const counties = svg
+    const cities = svg
         .selectAll('circle')
         .data(dataset)
         .enter()
@@ -90,7 +90,7 @@ function () {
     attr('fill-opacity', 0.5)
         .attr('stroke', d = > designedColors[d.cluster];
 )
-    counties.on('mouseover', function (d) {
+    cities.on('mouseover', function (d) {
         const circle = d3.select(this);
         const x = Number(circle.attr('cx'));
         const y = Number(circle.attr('cy')) - 10;
@@ -104,7 +104,7 @@ function () {
             .attr('font-size', '11px')
             .text(formatAsThousands(d.population));
     });
-    counties.on('mouseout', () = > {
+    cities.on('mouseout', () = > {
         svg.select('#tooltip').remove();
 })
     svg
