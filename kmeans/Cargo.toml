@@ -1,0 +1,29 @@
+[package]
+name = "kmeans"
+version = "0.1.0"
+authors = ["frilli31 <luca.all1996@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+rayon = "1.1.0"
+regex = "1.1.7"
+lazy_static = "1.3.0"
+
+[dev-dependencies]
+criterion = "0.2"
+
+[[bench]]
+name = "over_cities"
+harness = false
+
+[[bench]]
+name = "over_centers"
+harness = false
+
+[[bench]]
+name = "over_interactions"
+harness = false
+
+[[bench]]
+name = "over_cutoff"
+harness = false
