@@ -95,8 +95,9 @@ public class ParallelKMeans {
                 int mid = Math.floorDiv(size, 2);
                 ClusterReduce r1 = new ClusterReduce(cluster_of_cities.subList(0, mid), cities.subList(0, mid), h, cutoff);
                 ClusterReduce r2 = new ClusterReduce(cluster_of_cities.subList(mid, size), cities.subList(mid, size), h, cutoff);
-                r1.fork();
-                return Result.sum(r2.compute(), r1.join());
+                
+                invokeAll(r1, r2);
+                return Result.sum(r1.join(), r2.join());
             }
         }
     }
