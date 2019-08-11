@@ -5,10 +5,23 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>unipd.algorithm</groupId>
-    <artifactId>ex4-clustering</artifactId>
+    <artifactId>ex5-parallel</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <dependencies>
+        <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.9</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-math3 -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-math3</artifactId>
+            <version>3.6.1</version>
+        </dependency>
+
         <!-- https://mvnrepository.com/artifact/org.knowm.xchart/xchart -->
         <dependency>
             <groupId>org.knowm.xchart</groupId>
@@ -27,12 +40,6 @@
             <groupId>org.knowm.xchart</groupId>
             <artifactId>xchart-demo</artifactId>
             <version>3.5.4</version>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-            <version>3.9</version>
         </dependency>
     </dependencies>
 

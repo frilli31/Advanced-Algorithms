@@ -39,3 +39,9 @@ hs_err_pid*
 
 # Extra files
 *.jpeg
+
+/target
+**/*.rs.bk
+*/Cargo.lock
+
+/.idea
